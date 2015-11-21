@@ -25,6 +25,11 @@ const int randomPin = 5;
 const byte handshakeInit = 0x64;
 const byte handshakeResponse = 0x42;
 
+// Sound frequencies (_s_ means sharp)
+const int B_5 = 988;
+const int E_6 = 1319;
+const int Gs6 = 1661;
+
 // Other things
 SoftwareSerial arduinoSerial(serialRX, serialTX);
 Servo servo;
@@ -58,8 +63,10 @@ void setup() {
   // Decide on who should be player one
   amPlayerTwo = determinePlayers();
 
-  // Switch off the status LED
-  digitalWrite(fourBitLEDs[0], LOW);
+  // Indicate who's who, and play SFX
+  setFourBitLEDs(!amPlayerTwo ? 0b1100 : 0b0011);
+  playHandshakeCompleteSFX();
+  setFourBitLEDs(0b0000);
   
   // Ready to start the game!
 }
@@ -129,5 +136,17 @@ void setFourBitLEDs(byte value) {
   for (int i = 0; i < 4; i++) {
     digitalWrite(fourBitLEDs[i], (value >> (3 - i)) & 1);
   }
+}
+
+// Sound Effects
+// Many of these take advantage of each Arduino
+// having its own piezo, allowing for some polyphony!
+
+void playHandshakeCompleteSFX() {
+  tone(piezo, !amPlayerTwo ? B_5 : E_6);
+  delay(150);
+  tone(piezo, !amPlayerTwo ? E_6 : Gs6);
+  delay(150);
+  noTone(piezo);
 }
 

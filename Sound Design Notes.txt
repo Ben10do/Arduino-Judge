@@ -1,0 +1,76 @@
+ARDUINO_JUDGE SOUND DESIGN
+==========================
+
+Comm. Successful SFX:
+---------------------
+P1:
+B_5
+E_6
+
+P2:
+E_6
+G#6
+
+Dodged:
+-------
+Dodger:
+E_7
+B_6 if P1, B_7 if P2
+B_7
+
+Other:
+A#5
+G#5
+D#5
+
+Attacked:
+---------
+Attacker:
+Who knows?
+
+Other:
+Who knows? Perhaps some kind of noise output
+
+Game Over SFX:
+--------------
+P1:
+G#6
+F#6
+E_6
+D#6
+C#6
+B_5
+
+(A_5)
+
+(G#5)
+
+P2:
+E_7
+D#7
+C#7
+B_6
+A_6
+G#6
+
+(F#5)
+
+(E_5)
+
+Countdown:
+----------
+(short tones, with a relatively long delay between them)
+P1:
+E_8
+E_8
+E_8
+E_7
+
+P2:
+Ditto, but using one of:
+D#8 (or D_8, both are pretty dissonant)
+B_7
+A_7
+G#7
+F#7
+E_7
