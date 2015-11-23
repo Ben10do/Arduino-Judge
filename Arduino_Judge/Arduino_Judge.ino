@@ -1,38 +1,17 @@
-#include <SoftwareSerial.h>
+/*
+ * Arduino_Judge.ino
+ * ARDUINO_JUDGE
+ * 
+ * Partially based on Nintendo's Game & Watch Judge game.
+ * Is your piezo higher than their's? Is your LED flashing
+ * the fastest? Good - time to whack them with a hammer!
+ * (...metaphorically speaking, of course)
+ * 
+ * By: Daniel Barlow and Ben Hetherington
+ */
+
 #include <Servo.h>
-
-#define randomByte() random(0x100)
-
-// Game variables
-bool amPlayerTwo;
-
-// Digital pin constants
-const int lowerButton = 2;
-const int higherButton = 3;
-const int fourBitLEDs[] = {4, 5, 6, 7};
-const int whiteLED = 8;
-const int analogLED = 9;
-const int piezo = 10;
-const int servoPin = 11;
-const int serialRX = 12;
-const int serialTX = 13;
-
-// Analog pin constants
-const int LDRPin = 0;
-const int randomPin = 5;
-
-// Communication constants
-const byte handshakeInit = 0x64;
-const byte handshakeResponse = 0x42;
-
-// Sound frequencies (_s_ means sharp)
-const int B_5 = 988;
-const int E_6 = 1319;
-const int Gs6 = 1661;
-
-// Other things
-SoftwareSerial arduinoSerial(serialRX, serialTX);
-Servo servo;
+#include "Arduino_Judge.h"
 
 void setup() {
   // Setup all the pins
@@ -47,7 +26,7 @@ void setup() {
   pinMode(servoPin, OUTPUT);
   
   // Set up serial, random seed, and servo
-  arduinoSerial.begin(115200); // About 14 KB/s
+  beginSerial();
   randomSeed(analogRead(randomPin));
   servo.attach(servoPin);
   
@@ -69,84 +48,60 @@ void setup() {
   setFourBitLEDs(0b0000);
   
   // Ready to start the game!
-}
-
-bool tryHandshake() {
-  // Returns true if handshake was successful;
-  // otherwise, returns false.
-  arduinoSerial.write(handshakeInit);
   
-  for (int i = 0; i < 10; i++) {
-    // Wait for a response
-    delay(10);
-    if (arduinoSerial.available()) {
-      byte readByte = arduinoSerial.read();
-      
-      if (readByte == handshakeInit) {
-        // If the other device has sent a handshake,
-        // acknowledge it, and start the game
-        arduinoSerial.write(handshakeResponse);
-        return true;
-      } else if (readByte == handshakeResponse) {
-        // If the other device has acknowledged a handshake,
-        // start the game.
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-bool determinePlayers() {
-  // Returns false if P1, true if P2.
-  // The players are guaranteed to have been determined once
-  // this function returns, but if there is no response, the
-  // Arduino will lock up. This is fine for this project.
-  for (;;) {
-    byte myRandomNum = randomByte();
-    arduinoSerial.write(myRandomNum);
-    while (!arduinoSerial.available()) {
-      // Wait until we recieve the other Arduino's number
-    }
-    
-    byte otherArduinoRandomNum = arduinoSerial.read();
-    if (myRandomNum > otherArduinoRandomNum) {
-      // We're P1
-      return false;
-      
-    } else if (myRandomNum < otherArduinoRandomNum) {
-      // We're P2
-      return true;
-    }
-    
-    // If they're both the same, try again.
-  }
+  static int a = generateNoteFreq(49); // TODO: Remove this
+  // (only there to include the extra bulk of that function)
 }
 
 void loop() {
-  // This code tests that the handshake was successful.
-  digitalWrite(whiteLED, HIGH);
-  digitalWrite(analogLED, amPlayerTwo ? HIGH : LOW);
-  delay(60000);
-  // TODO: Replace this with the game itself!
+  // Resetting these variables before starting again
+  lowerButtonPressed = false;
+  higherButtonPressed = false;
+
+  // Setting the next game and variables
+  currentGame = decideOnGame(currentGame);
+  communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
+
+  // Test code
+  Serial.print("Game No.: ");
+  Serial.println(currentGame);
+  Serial.print("My number: ");
+  Serial.println(myNumber);
+  Serial.print("Other number: ");
+  Serial.println(otherNumber);
+
+  delay(5000);
 }
+
+// Button interrupts
+// Feel free to expand if they need expanding
+// Return as quickly as possible, to avoid missing serial inputs
+
+void lowerButtonPressedInterrupt() {
+  lowerButtonPressed = true;
+  disableInterrupts(); // Prevents repeated presses
+}
+
+void higherButtonPressedInterrupt() {
+  higherButtonPressed = true;
+  disableInterrupts(); // Prevents repeated presses
+}
+
+void enableInterrupts() {
+  attachInterrupt(digitalPinToInterrupt(lowerButton), lowerButtonPressedInterrupt, FALLING);
+  attachInterrupt(digitalPinToInterrupt(higherButton), higherButtonPressedInterrupt, FALLING);
+}
+
+void disableInterrupts() {
+  detachInterrupt(digitalPinToInterrupt(lowerButton));
+  detachInterrupt(digitalPinToInterrupt(higherButton));
+}
+
+// Additional functions
 
 void setFourBitLEDs(byte value) {
   for (int i = 0; i < 4; i++) {
     digitalWrite(fourBitLEDs[i], (value >> (3 - i)) & 1);
   }
-}
-
-// Sound Effects
-// Many of these take advantage of each Arduino
-// having its own piezo, allowing for some polyphony!
-
-void playHandshakeCompleteSFX() {
-  tone(piezo, !amPlayerTwo ? B_5 : E_6);
-  delay(150);
-  tone(piezo, !amPlayerTwo ? E_6 : Gs6);
-  delay(150);
-  noTone(piezo);
 }
 
