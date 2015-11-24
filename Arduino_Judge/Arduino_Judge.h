@@ -7,20 +7,27 @@
  */
 
 #include <Arduino.h>
-#define randomByte() random(0x100)
 
 // All of the microgames!
 typedef enum GameID {
   PiezoPitch = 0, // Piezo - highest note
   PiezoRhythm,    // Piezo - fastest rhythm
   LEDNumber,      // LED   - 4-bit highest number
-  LEDBright,      // LED   - brightest
+  LEDBrightest,   // LED   - brightest
   LEDFrequency,   // LED   - fastest frequency
   LDRCover        // LDR   - first to cover
 };
 
 // The maximum RNG numbers for each game (0 = N/A)
 byte gameMaxNumbers[6] = {36, 10, 15, 5, 10, 0};
+
+// The possible game outcomes
+typedef enum GameResult {
+  CorrectAttack = 0,
+  IncorrectAttack,
+  CorrectDoge,
+  IncorrectDodge
+};
 
 // Game variables
 bool amPlayerTwo;

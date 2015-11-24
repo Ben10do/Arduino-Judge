@@ -61,6 +61,7 @@ void loop() {
   // Setting the next game and variables
   currentGame = decideOnGame(currentGame);
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
+  GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
 
   // Test code
   Serial.print("Game No.: ");
