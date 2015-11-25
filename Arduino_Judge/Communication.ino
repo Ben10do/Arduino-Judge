@@ -102,12 +102,21 @@ GameID decideOnGame(GameID previousGame) {
     }
   } else {
     // Wait to hear what the next game will be
-    while (!arduinoSerial.available()) {
-      // Wait until we recieve the game ID
-    }
+    waitForResponse();
 
     return (GameID)arduinoSerial.read();
   }
+}
+
+void waitForResponse() {
+  for (int i = 0; i < 4000; i++) {
+    if (arduinoSerial.available()) {
+      return;
+    }
+  }
+  
+  // If we've reached here, we've timed out.
+  handleCommunicationError();
 }
 
 void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
@@ -125,14 +134,12 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   do {
     myRandomNum = random(max);
     arduinoSerial.write(myRandomNum);
-    while (!arduinoSerial.available()) {
-      // Wait until we recieve the other Arduino's number
-    }
+    waitForResponse();
     
     otherArduinoRandomNum = arduinoSerial.read();
   } while (myRandomNum == otherArduinoRandomNum);
 
-  // Pass them back (checking for NULL in the process)
+  // Pass the numbers back (checking for NULL in the process)
   
   if (myNumber) {
     *myNumber = myRandomNum;
@@ -141,5 +148,14 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   if (otherNumber) {
     *otherNumber = otherArduinoRandomNum;
   }
+}
+
+void handleCommunicationError() {
+  // If the Arduino recieves unexpected data, or doesn't
+  // recieve any data after a timeout, we'll just reset
+  // the sketch, and wait for an initial connection again.
+  Serial.println("Communication Error.\n\n");
+  playCommunicationErrorSFX();
+  reset();
 }
 

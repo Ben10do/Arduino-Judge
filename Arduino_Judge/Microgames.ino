@@ -26,8 +26,9 @@ GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
       return runLDRCover();
 
     default:
-      // TODO: Handle unexpected Game ID
-      return IncorrectDodge;
+      handleCommunicationError();
+      // TODO: Should this have a return statement?
+      // It'll never be reached!
   }
 }
 

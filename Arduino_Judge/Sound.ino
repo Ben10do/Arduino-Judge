@@ -6,6 +6,7 @@
  */
 
 // Sound frequencies (_s_ means sharp)
+const int A_2 = 110;
 const int B_4 = 494;
 const int E_5 = 659;
 const int Gs5 = 831;
@@ -20,6 +21,11 @@ void playHandshakeCompleteSFX() {
   tone(piezo, !amPlayerTwo ? E_5 : Gs5);
   delay(125);
   noTone(piezo);
+}
+
+void playCommunicationErrorSFX() {
+  tone(piezo, A_2);
+  delay(250);
 }
 
 int generateNoteFreq(int n) {

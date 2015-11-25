@@ -27,6 +27,7 @@ void setup() {
   
   // Set up serial, random seed, and servo
   beginSerial();
+  Serial.begin(9600);
   randomSeed(analogRead(randomPin));
   servo.attach(servoPin);
   
@@ -104,5 +105,20 @@ void setFourBitLEDs(byte value) {
   for (int i = 0; i < 4; i++) {
     digitalWrite(fourBitLEDs[i], (value >> (3 - i)) & 1);
   }
+}
+
+void reset() {
+  // Restarts the sketch
+  // However, we have to reset all the hardware ourselves
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(fourBitLEDs[i], LOW);
+  }
+  digitalWrite(whiteLED, LOW);
+  digitalWrite(analogLED, LOW);
+  noTone(piezo);
+  servo.detach();
+  
+  // The actual reset happens here:
+  asm("jmp 0");
 }
 
