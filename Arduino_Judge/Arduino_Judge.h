@@ -18,20 +18,26 @@ typedef enum GameID {
   LDRCover        // LDR   - first to cover
 };
 
-// The maximum RNG numbers for each game (0 = N/A)
-byte gameMaxNumbers[6] = {36, 10, 15, 5, 10, 0};
+// The maximum RNG numbers for each game (1 = N/A)
+byte gameMaxNumbers[6] = {36, 10, 15, 5, 10, 1};
 
 // The possible game outcomes
 typedef enum GameResult {
-  CorrectAttack = 0,
-  IncorrectAttack,
-  CorrectDoge,
-  IncorrectDodge
+  GameTied = 0,            // No-one's done anything (yet, at least).
+  CorrectAttack,          // If you rightfully attack, and hit the other player
+  IncorrectAttack,        // If you wrongly try to attack the other player
+  WasCorrectlyAttacked,   // If the other player rightfully attacks you
+  WasIncorrectlyAttacked, // If the other player wrongly attacks you
+  CorrectDodge,           // If you successfully dodge the other player's attack
+  IncorrectDodge,         // If you dodged when you could've attacked
+  WasCorrectlyDodged,     // If the other player dodges your attack
+  WasIncorrectlyDodged    // If the other player dodges when they could've attacked 
 };
 
 // Game variables
 bool amPlayerTwo;
 GameID currentGame = (GameID)2; // Won't start with the numbers game
+byte score = 0;
 
 // The randomly generated numbers used by each Arduino
 byte myNumber = 0;
@@ -39,6 +45,16 @@ byte otherNumber = 0;
 
 volatile bool higherButtonPressed = false;
 volatile bool lowerButtonPressed = false;
+
+// To work out the time when the button was pressed
+int millisAtGameStart = 0;
+int millisAtButtonPress = 0;
+
+// Scoring constants
+const byte correctAttackPoints = 5;
+const byte incorrectAttackPoints = 8;
+const byte correctDodgePoints = 2;
+const byte incorrectDodgePoints = 1;
 
 // Digital pin constants
 const int lowerButton = 2;

@@ -21,11 +21,11 @@ SoftwareSerial arduinoSerial(serialRX, serialTX);
 
 // Start/end functions
 
-void beginSerial() {
+void beginArduinoSerial() {
   arduinoSerial.begin(115200); // About 14 KB/s
 }
 
-void endSerial() {
+void endArduinoSerial() {
   arduinoSerial.end(); // TODO: Check if this is necessary
 }
 
@@ -109,7 +109,9 @@ GameID decideOnGame(GameID previousGame) {
 }
 
 void waitForResponse() {
-  for (int i = 0; i < 4000; i++) {
+  for (int i = 0; i < 5000; i++) {
+    // Call to arduinoSerial.available() takes ≈20µs
+    // Consequently, the timeout is ≈0.1s.
     if (arduinoSerial.available()) {
       return;
     }
@@ -139,6 +141,10 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
     otherArduinoRandomNum = arduinoSerial.read();
   } while (myRandomNum == otherArduinoRandomNum);
 
+  if (otherArduinoRandomNum >= max) {
+    handleCommunicationError();
+  }
+
   // Pass the numbers back (checking for NULL in the process)
   
   if (myNumber) {
@@ -147,6 +153,58 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
 
   if (otherNumber) {
     *otherNumber = otherArduinoRandomNum;
+  }
+}
+
+int getSharedRandomNumber(int max) {
+  // Returns a random number that will be shared by
+  // both Arduinos. Decided by player one.
+  if (!amPlayerTwo) {
+    // Then it's up to us to get the number!
+    int number = random(max);
+    arduinoSerial.write(number);
+    return number;
+      
+  } else {
+    // Wait to hear what the number is
+    waitForResponse();
+
+    int number = arduinoSerial.read();
+
+    if (number >= max) {
+      handleCommunicationError();
+    }
+
+    return number;
+  }
+}
+
+GameResult communicateGameStatus(GameResult myStatus) {
+  // Send GameTied if the game's not yet been won or lost
+  // Otherwise, send: CorrectAttack,   IncorrectAttack,
+  //                  CorrectDodge, or IncorrectDodge.
+
+  arduinoSerial.write(myStatus);
+  waitForResponse();
+  GameResult otherStatus = (GameResult)arduinoSerial.read();
+
+  if (myStatus == GameTied && otherStatus == GameTied) {
+    // Then keep the game going!
+    return GameTied;
+    
+  } else if (myStatus == GameTied && otherStatus != GameTied) {
+    // Then we'll return the other player's status
+    return otherStatus;
+    
+  } else if (myStatus != GameTied && otherStatus == GameTied) {
+    // Then we'll return our status
+    return myStatus;
+    
+  } else {
+    // If both players reacted before the Arduinos could
+    // communicate, we're going to have to work out who was first.
+    // TODO: Implement this!
+    return GameTied;
   }
 }
 

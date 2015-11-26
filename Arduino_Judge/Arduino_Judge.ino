@@ -26,7 +26,7 @@ void setup() {
   pinMode(servoPin, OUTPUT);
   
   // Set up serial, random seed, and servo
-  beginSerial();
+  beginArduinoSerial();
   Serial.begin(9600);
   randomSeed(analogRead(randomPin));
   servo.attach(servoPin);
@@ -49,9 +49,6 @@ void setup() {
   setFourBitLEDs(0b0000);
   
   // Ready to start the game!
-  
-  static int a = generateNoteFreq(49); // TODO: Remove this
-  // (only there to include the extra bulk of that function)
 }
 
 void loop() {
@@ -61,8 +58,17 @@ void loop() {
 
   // Setting the next game and variables
   currentGame = decideOnGame(currentGame);
+  int countdownDelay = 80 + (getSharedRandomNumber(8) * 10);
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
+
+  // Start the next game, with a count-in.
+  playCountdownSFX(currentGame, countdownDelay);
   GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
+
+  // TODO: Handle the result!
+  // Play relevant SFX/Animations
+  updateScore(result);
+  flashHigherPlayersLED(myNumber, otherNumber);
 
   // Test code
   Serial.print("Game No.: ");
@@ -81,11 +87,15 @@ void loop() {
 
 void lowerButtonPressedInterrupt() {
   lowerButtonPressed = true;
+  higherButtonPressed = false;
+  millisAtButtonPress = millis();
   disableInterrupts(); // Prevents repeated presses
 }
 
 void higherButtonPressedInterrupt() {
   higherButtonPressed = true;
+  lowerButtonPressed = false;
+  millisAtButtonPress = millis();
   disableInterrupts(); // Prevents repeated presses
 }
 
@@ -107,9 +117,85 @@ void setFourBitLEDs(byte value) {
   }
 }
 
+void flashHigherPlayersLED(byte myNumber, byte otherNumber) {
+  // Flashes the white LED of the player that had the higher
+  // random number (and so had a higher note, etc.)
+  if (myNumber >= otherNumber) {
+    for (int i = 0; i < 3; i++) {
+      digitalWrite(whiteLED, HIGH);
+      delay(250);
+      digitalWrite(whiteLED, LOW);
+      delay(250);
+    }
+  } else {
+    delay(500 * 3);
+  }
+}
+
+void updateScore(GameResult result) {
+  // Each equivalent case must mirror each other!
+  // e.g. CorrectAttack increases the score by correctAttackPoints,
+  // whilst WasCorrectlyAttacked decreases the score by correctAttackPoints.
+  switch (result) {
+    case CorrectAttack:
+      score += correctAttackPoints;
+      break;
+
+    case WasCorrectlyAttacked:
+      score -= correctAttackPoints;
+      break;
+
+    case IncorrectAttack:
+      score -= incorrectAttackPoints;
+      break;
+
+    case WasIncorrectlyAttacked:
+      score += incorrectAttackPoints;
+      break;
+    
+    case CorrectDodge:
+      score += correctDodgePoints;
+      break;
+
+    case WasCorrectlyDodged:
+      score -= correctDodgePoints;
+      break;
+    
+    case IncorrectDodge:
+      score -= incorrectDodgePoints;
+      break;
+      
+    case WasIncorrectlyDodged:
+      score += incorrectDodgePoints;
+      break;
+
+    case GameTied:
+    default:
+      // No change to score.
+      break;
+  }
+
+  updateServo(score);
+
+  if (score >= 80) {
+    // TODO: Handle the victory!
+  } else if (score <= -80) {
+    // TODO: Handle the loss!
+  }
+}
+
+void updateServo(int score) {
+  // Maps between -80 to +80.
+  score = constrain(score, -80, 80);
+  servo.write(map(score, -80, 80, 10, 170));
+  delay(200); // Give it a little time to move
+}
+
 void reset() {
   // Restarts the sketch
   // However, we have to reset all the hardware ourselves
+  endArduinoSerial();
+  Serial.end();
   for (int i = 0; i < 4; i++) {
     digitalWrite(fourBitLEDs[i], LOW);
   }
