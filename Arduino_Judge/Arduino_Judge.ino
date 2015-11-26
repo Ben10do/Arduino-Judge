@@ -48,6 +48,7 @@ void setup() {
   playHandshakeCompleteSFX();
   setFourBitLEDs(0b0000);
   
+  score = 0;
   // Ready to start the game!
 }
 

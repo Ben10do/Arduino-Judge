@@ -125,6 +125,7 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
   // this function returns, but if there is no response, the
   // Arduino will lock up. This is fine for this project.
+  
   byte myRandomNum;
   byte otherArduinoRandomNum;
 

@@ -7,7 +7,11 @@
 
 GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
   millisAtGameStart = millis();
+<<<<<<< HEAD
   
+=======
+    
+>>>>>>> 155d73db9f60d14c7e70c6fcd6d553efa91ebeb7
   switch (game) {
     case PiezoPitch:
       return runPiezoPitch(myNumber, otherNumber);
@@ -66,8 +70,26 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
 
 GameResult runLDRCover() {
   // LDR - first to cover
+<<<<<<< HEAD
   // TODO: Must write this microgame!
   return communicateGameStatus(CorrectAttack);
   return GameTied;
+=======
+  digitalWrite(whiteLED,HIGH);
+  delay(100);
+  int sensorValue = analogRead(LDRPin);
+  GameResult gameState = GameTied;
+  while (gameState == GameTied){
+    //Darkness is a high value, well lit is a low value.
+    newValue = analogRead(LDRPin);
+    if (newValue>=sensorValue + 300 || newValue==1023){
+      gameState = CorrectAttack;
+    }
+    GameResult communicatedGameState = communicateGameStatus(gameState);
+    if (communicatedGameState != GameTied){
+      return communicatedGameState;
+    }
+  }
+>>>>>>> 155d73db9f60d14c7e70c6fcd6d553efa91ebeb7
 }
 
