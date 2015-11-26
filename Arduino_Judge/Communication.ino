@@ -22,7 +22,7 @@ SoftwareSerial arduinoSerial(serialRX, serialTX);
 // Start/end functions
 
 void beginArduinoSerial() {
-  arduinoSerial.begin(115200); // About 14 KB/s
+  arduinoSerial.begin(9600);
 }
 
 void endArduinoSerial() {
@@ -128,16 +128,17 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   byte myRandomNum;
   byte otherArduinoRandomNum;
 
-  if (max > 0x100) {
+  if (max > 0x100 || max < 2) {
     // Ensure that we're not making more than one byte
+    // and that we're not always going to get the same number!
     max = 0x100;
   }
   
   do {
     myRandomNum = random(max);
     arduinoSerial.write(myRandomNum);
-    waitForResponse();
     
+    waitForResponse();
     otherArduinoRandomNum = arduinoSerial.read();
   } while (myRandomNum == otherArduinoRandomNum);
 
@@ -193,8 +194,8 @@ GameResult communicateGameStatus(GameResult myStatus) {
     return GameTied;
     
   } else if (myStatus == GameTied && otherStatus != GameTied) {
-    // Then we'll return the other player's status
-    return otherStatus;
+    // Then we'll return the opposite status
+    return (GameResult)((int)otherStatus + 2);
     
   } else if (myStatus != GameTied && otherStatus == GameTied) {
     // Then we'll return our status
@@ -203,8 +204,41 @@ GameResult communicateGameStatus(GameResult myStatus) {
   } else {
     // If both players reacted before the Arduinos could
     // communicate, we're going to have to work out who was first.
-    // TODO: Implement this!
-    return GameTied;
+    unsigned int myResponseTime = millisAtButtonPress - millisAtGameStart;
+    
+    arduinoSerial.write(myResponseTime & 0xFF); // Send least significant byte first
+    arduinoSerial.write(myResponseTime >> 8);   // (i.e. little-endian)
+    
+    waitForResponse();
+    unsigned int otherResponseTime = arduinoSerial.read();
+    otherResponseTime += arduinoSerial.read() << 8;
+    
+    if (myResponseTime < otherResponseTime) {
+      // If I was fastest, then it's what I originally thought!
+      return myStatus;
+      
+    } else if (myResponseTime > otherResponseTime) {
+      // If I was slower, then looks like I'll have to base it on the other Arduino.
+      return (GameResult)((int)otherStatus + 2);
+      
+    } else {
+      // If both are the same, we'll let player one decide who wins.
+      bool winningPlayerIsPlayerTwo = getSharedRandomNumber(2);
+      
+      if (!winningPlayerIsPlayerTwo) {
+        if (!amPlayerTwo) {
+          return myStatus;
+        } else {
+          return (GameResult)((int)otherStatus + 2);
+        }
+        
+      } else {
+        if (!amPlayerTwo) {
+          return (GameResult)((int)otherStatus + 2);
+        } else {
+          return myStatus;
+        }
+    }
   }
 }
 
@@ -214,6 +248,7 @@ void handleCommunicationError() {
   // the sketch, and wait for an initial connection again.
   Serial.println("Communication Error.\n\n");
   playCommunicationErrorSFX();
+  delay(1000);
   reset();
 }
 

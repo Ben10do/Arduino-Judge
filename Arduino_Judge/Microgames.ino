@@ -6,7 +6,7 @@
  */
 
 GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
-millisAtGameStart = millis();
+  millisAtGameStart = millis();
   
   switch (game) {
     case PiezoPitch:
@@ -67,6 +67,7 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
 GameResult runLDRCover() {
   // LDR - first to cover
   // TODO: Must write this microgame!
+  return communicateGameStatus(CorrectAttack);
   return GameTied;
 }
 
