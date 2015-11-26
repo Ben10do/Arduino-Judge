@@ -22,7 +22,7 @@ SoftwareSerial arduinoSerial(serialRX, serialTX);
 // Start/end functions
 
 void beginArduinoSerial() {
-  arduinoSerial.begin(115200); // About 14 KB/s
+  arduinoSerial.begin(9600);
 }
 
 void endArduinoSerial() {
@@ -125,6 +125,7 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
   // this function returns, but if there is no response, the
   // Arduino will lock up. This is fine for this project.
+  
   byte myRandomNum;
   byte otherArduinoRandomNum;
 
@@ -214,6 +215,7 @@ void handleCommunicationError() {
   // the sketch, and wait for an initial connection again.
   Serial.println("Communication Error.\n\n");
   playCommunicationErrorSFX();
+  delay(1000);
   reset();
 }
 

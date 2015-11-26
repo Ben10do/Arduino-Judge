@@ -27,7 +27,7 @@ void setup() {
   
   // Set up serial, random seed, and servo
   beginArduinoSerial();
-  Serial.begin(9600);
+  Serial.begin(115200);
   randomSeed(analogRead(randomPin));
   servo.attach(servoPin);
   
@@ -48,6 +48,7 @@ void setup() {
   playHandshakeCompleteSFX();
   setFourBitLEDs(0b0000);
   
+  score = 0;
   // Ready to start the game!
 }
 

@@ -73,6 +73,7 @@ void playCommunicationErrorSFX() {
   // Indicates that a communication error has occured.
   tone(piezo, A_2);
   delay(250);
+  noTone(piezo);
 }
 
 int generateNoteFreq(int n) {

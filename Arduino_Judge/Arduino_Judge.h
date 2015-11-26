@@ -19,7 +19,7 @@ typedef enum GameID {
 };
 
 // The maximum RNG numbers for each game (1 = N/A)
-byte gameMaxNumbers[6] = {36, 10, 15, 5, 10, 1};
+byte gameMaxNumbers[6] = {36, 10, 15, 5, 10, 2};
 
 // The possible game outcomes
 typedef enum GameResult {
@@ -48,7 +48,7 @@ volatile bool lowerButtonPressed = false;
 
 // To work out the time when the button was pressed
 int millisAtGameStart = 0;
-int millisAtButtonPress = 0;
+volatile int millisAtButtonPress = 0;
 
 // Scoring constants
 const byte correctAttackPoints = 5;
