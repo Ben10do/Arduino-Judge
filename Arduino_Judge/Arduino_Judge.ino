@@ -195,6 +195,7 @@ void updateServo(int score) {
 void reset() {
   // Restarts the sketch
   // However, we have to reset all the hardware ourselves
+  disableInterrupts();
   endArduinoSerial();
   Serial.end();
   for (int i = 0; i < 4; i++) {

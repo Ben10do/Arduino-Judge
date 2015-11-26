@@ -72,7 +72,7 @@ GameResult runLDRCover() {
   GameResult gameState = GameTied;
   while (gameState == GameTied){
     //Darkness is a high value, well lit is a low value.
-    newValue = analogRead(LDRPin);
+    int newValue = analogRead(LDRPin);
     if (newValue>=sensorValue + 300 || newValue==1023){
       millisAtButtonPress = millis(); // Added this, since it's necessary for resolving conflicts!
       gameState = CorrectAttack;

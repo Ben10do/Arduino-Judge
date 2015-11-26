@@ -239,6 +239,7 @@ GameResult communicateGameStatus(GameResult myStatus) {
         } else {
           return myStatus;
         }
+      }
     }
   }
 }
