@@ -79,7 +79,7 @@ void loop() {
   Serial.print("Other number: ");
   Serial.println(otherNumber);
 
-  delay(5000);
+  delay(500);
 }
 
 // Button interrupts

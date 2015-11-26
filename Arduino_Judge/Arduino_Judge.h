@@ -47,13 +47,8 @@ volatile bool higherButtonPressed = false;
 volatile bool lowerButtonPressed = false;
 
 // To work out the time when the button was pressed
-<<<<<<< HEAD
 unsigned int millisAtGameStart = 0;
 volatile unsigned int millisAtButtonPress = 0;
-=======
-int millisAtGameStart = 0;
-volatile int millisAtButtonPress = 0;
->>>>>>> 155d73db9f60d14c7e70c6fcd6d553efa91ebeb7
 
 // Scoring constants
 const byte correctAttackPoints = 5;
