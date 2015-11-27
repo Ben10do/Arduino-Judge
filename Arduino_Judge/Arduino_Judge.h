@@ -19,11 +19,11 @@ typedef enum GameID {
 };
 
 // The maximum RNG numbers for each game (1 = N/A)
-byte gameMaxNumbers[6] = {36, 10, 15, 5, 10, 2};
+byte gameMaxNumbers[6] = {36, 10, 14, 5, 10, 2};
 
 // The possible game outcomes
 typedef enum GameResult {
-  GameTied = 0,            // No-one's done anything (yet, at least).
+  GameTied = 0,           // No-one's done anything (yet, at least).
   CorrectAttack,          // If you rightfully attack, and hit the other player
   IncorrectAttack,        // If you wrongly try to attack the other player
   WasCorrectlyAttacked,   // If the other player rightfully attacks you

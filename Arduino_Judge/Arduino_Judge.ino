@@ -53,10 +53,6 @@ void setup() {
 }
 
 void loop() {
-  // Resetting these variables before starting again
-  lowerButtonPressed = false;
-  higherButtonPressed = false;
-
   // Setting the next game and variables
   currentGame = decideOnGame(currentGame);
   int countdownDelay = 80 + (getSharedRandomNumber(8) * 10);
@@ -70,16 +66,6 @@ void loop() {
   // Play relevant SFX/Animations
   updateScore(result);
   flashHigherPlayersLED(myNumber, otherNumber);
-
-  // Test code
-  Serial.print("Game No.: ");
-  Serial.println(currentGame);
-  Serial.print("My number: ");
-  Serial.println(myNumber);
-  Serial.print("Other number: ");
-  Serial.println(otherNumber);
-
-  delay(500);
 }
 
 // Button interrupts
