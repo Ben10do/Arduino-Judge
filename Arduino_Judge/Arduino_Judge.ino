@@ -30,20 +30,30 @@ void setup() {
   Serial.begin(115200);
   randomSeed(analogRead(randomPin));
   servo.attach(servoPin);
+  updateServo(0);
   
+  initCommunication();
+}
+
+void initCommunication() {
   // Handshake; ensures that both Arduinos are in sync
   bool handshakeDone = false;
+
+  // Animation variables
+  byte fadeValue = 1;
+  bool isGoingUpwards = true;
+
   while (!handshakeDone) {
-    // Flashing a status LED, to indicate we're ready
-    digitalWrite(fourBitLEDs[0], !digitalRead(fourBitLEDs[0]));
+    fadeStatusLED(&fadeValue, &isGoingUpwards);
     
     handshakeDone = tryHandshake();
   }
   
-  // Decide on who should be player one
+  // Decide on who should each player
   amPlayerTwo = determinePlayers();
 
   // Indicate who's who, and play SFX
+  analogWrite(analogLED, 0);
   setFourBitLEDs(!amPlayerTwo ? 0b1100 : 0b0011);
   playHandshakeCompleteSFX();
   setFourBitLEDs(0b0000);
@@ -52,18 +62,41 @@ void setup() {
   // Ready to start the game!
 }
 
+void fadeStatusLED(byte *fadeValue, bool *isGoingUpwards) {
+  // Fading a status LED, to indicate we're ready
+  analogWrite(analogLED, *fadeValue);
+    
+    if (*isGoingUpwards) {
+      *fadeValue *= 2;
+      if (*fadeValue == 0) {
+        *fadeValue = 255;
+        *isGoingUpwards = false;
+      }
+      
+    } else {
+      *fadeValue /= 2;
+      if (*fadeValue == 0) {
+        *fadeValue = 1;
+        *isGoingUpwards = true;
+      }
+    }
+}
+
 void loop() {
   // Setting the next game and variables
   currentGame = decideOnGame(currentGame);
-  int countdownDelay = 80 + (getSharedRandomNumber(8) * 10);
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
+  int countdownDelay = 80 + (getSharedRandomNumber(8) * 10);
 
   // Start the next game, with a count-in.
-  playCountdownSFX(currentGame, countdownDelay);
+  playCountdownSFX(countdownDelay);
   GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
 
-  // TODO: Handle the result!
-  // Play relevant SFX/Animations
+  // Clearing up after the game
+  setAllLEDs(LOW);
+  noTone(piezo);
+  
+  // TODO: Play relevant SFX/Animations
   updateScore(result);
   flashHigherPlayersLED(myNumber, otherNumber);
 }
@@ -102,6 +135,14 @@ void setFourBitLEDs(byte value) {
   for (int i = 0; i < 4; i++) {
     digitalWrite(fourBitLEDs[i], (value >> (3 - i)) & 1);
   }
+}
+
+void setAllLEDs(bool value) {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(fourBitLEDs[i], value);
+  }
+  digitalWrite(whiteLED, value);
+  digitalWrite(analogLED, value);
 }
 
 void flashHigherPlayersLED(byte myNumber, byte otherNumber) {
@@ -156,7 +197,6 @@ void updateScore(GameResult result) {
       score += incorrectDodgePoints;
       break;
 
-    case GameTied:
     default:
       // No change to score.
       break;
@@ -165,16 +205,30 @@ void updateScore(GameResult result) {
   updateServo(score);
 
   if (score >= 80) {
-    // TODO: Handle the victory!
+    handleVictory(true);
   } else if (score <= -80) {
-    // TODO: Handle the loss!
+    handleVictory(false);
   }
+}
+
+void handleVictory(bool didWin) {
+  // Play the sound effects and switch on an LED
+  playInstantOfVictorySFX(true);
+  digitalWrite(whiteLED, HIGH);
+  playVictoryJingleSFX(true);
+  digitalWrite(whiteLED, LOW);
+  playGameOverSFX();
+
+  // Resetting the servo, before restarting the game
+  score = 0;
+  updateServo(score);
 }
 
 void updateServo(int score) {
   // Maps between -80 to +80.
   score = constrain(score, -80, 80);
-  servo.write(map(score, -80, 80, 10, 170));
+  score = map(score, -80, 80, 10, 170);
+  servo.write(score);
   delay(200); // Give it a little time to move
 }
 
@@ -184,11 +238,7 @@ void reset() {
   disableInterrupts();
   endArduinoSerial();
   Serial.end();
-  for (int i = 0; i < 4; i++) {
-    digitalWrite(fourBitLEDs[i], LOW);
-  }
-  digitalWrite(whiteLED, LOW);
-  digitalWrite(analogLED, LOW);
+  setAllLEDs(LOW);
   noTone(piezo);
   servo.detach();
   

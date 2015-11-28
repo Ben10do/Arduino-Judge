@@ -61,15 +61,15 @@ const int lowerButton = 2;
 const int higherButton = 3;
 const int fourBitLEDs[] = {4, 5, 6, 7};
 const int whiteLED = 8;
-const int analogLED = 9;
+const int servoPin = 9;
 const int piezo = 10;
-const int servoPin = 11;
-const int serialRX = 12;
-const int serialTX = 13;
+const int analogLED = 11;
+const int serialRX = A1;
+const int serialTX = A2;
 
 // Analog pin constants
-const int LDRPin = 0;
-const int randomPin = 5;
+const int LDRPin = A0;
+const int randomPin = A5;
 
 // Object for servo
 Servo servo;

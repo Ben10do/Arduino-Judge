@@ -26,7 +26,7 @@ void beginArduinoSerial() {
 }
 
 void endArduinoSerial() {
-  arduinoSerial.end(); // TODO: Check if this is necessary
+  arduinoSerial.end();
 }
 
 // Functions for initial communication
@@ -47,6 +47,7 @@ bool tryHandshake() {
         // acknowledge it, and start the game
         arduinoSerial.write(handshakeResponse);
         return true;
+        
       } else if (readByte == handshakeResponse) {
         // If the other device has acknowledged a handshake,
         // start the game.
@@ -90,7 +91,6 @@ GameID decideOnGame(GameID previousGame) {
       GameID nextGame = (GameID)random(6);
       
       if (nextGame != previousGame) {
-        
         if (nextGame == LEDNumber) {
           // Get another number; makes this game less common
           nextGame = (GameID)random(6);
@@ -123,8 +123,7 @@ void waitForResponse() {
 
 void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
-  // this function returns, but if there is no response, the
-  // Arduino will lock up. This is fine for this project.
+  // this function returns.
   
   byte myRandomNum;
   byte otherArduinoRandomNum;
@@ -212,34 +211,26 @@ GameResult communicateGameStatus(GameResult myStatus) {
     
     waitForResponse();
     unsigned int otherResponseTime = arduinoSerial.read();
-    otherResponseTime += arduinoSerial.read() << 8;
+    otherResponseTime |= arduinoSerial.read() << 8;
     
     if (myResponseTime < otherResponseTime) {
-      // If I was fastest, then it's what I originally thought!
+      // If this Arduino was fastest, then it's as we originally thought.
       return myStatus;
       
     } else if (myResponseTime > otherResponseTime) {
-      // If I was slower, then looks like I'll have to base it on the other Arduino.
+      // If this Arduino was slower, then I'll have to base it on the other Arduino.
       return (GameResult)((int)otherStatus + 2);
       
     } else {
       // If both are the same, we'll let player one decide who wins.
       bool winningPlayerIsPlayerTwo = getSharedRandomNumber(2);
-      
-      if (!winningPlayerIsPlayerTwo) {
-        if (!amPlayerTwo) {
-          return myStatus;
-        } else {
-          return (GameResult)((int)otherStatus + 2);
-        }
-        
+
+      if (winningPlayerIsPlayerTwo ^ !amPlayerTwo) {
+        return myStatus;
       } else {
-        if (!amPlayerTwo) {
-          return (GameResult)((int)otherStatus + 2);
-        } else {
-          return myStatus;
-        }
+        return (GameResult)((int)otherStatus + 2);
       }
+      
     }
   }
 }

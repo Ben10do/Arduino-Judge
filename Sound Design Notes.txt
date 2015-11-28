@@ -31,6 +31,56 @@ Who knows?
 Other:
 Who knows? Perhaps some kind of noise output
 
+Instant of Victory:
+-------------------
+Winner:
+A_4
+A_5
+A_6
+A_7
+A_8
+(pause)
+
+Victory Jingle:
+---------------
+[fast]
+Winner:
+E_5
+-
+-
+-
+E_5
+-
+B_5
+-
+-
+-
+B_5
+-
+A_5
+-
+-
+-
+A_5
+-
+E_6
+-
+-
+-
+E_6
+-
+B_5
+-
+-
+-
+E_5
+(hold w/ vibrato)
+
+Loser:
+[final note]
+F#4
+(no vibrato)
+
 Game Over SFX:
 --------------
 P1:
