@@ -18,8 +18,9 @@ typedef enum GameID {
   LDRCover        // LDR   - first to cover
 };
 
-// The maximum RNG numbers for each game (1 = N/A)
-byte gameMaxNumbers[6] = {36, 10, 14, 5, 10, 2};
+// The maximum RNG numbers for each game
+// (last game doesn't matter, so we'll just say a whole byte)
+byte gameMaxNumbers[6] = {36, 10, 14, 5, 10, 100};
 
 // The possible game outcomes
 typedef enum GameResult {
@@ -59,16 +60,18 @@ const byte incorrectDodgePoints = 1;
 // Digital pin constants
 const int lowerButton = 2;
 const int higherButton = 3;
-const int fourBitLEDs[] = {4, 5, 6, 7};
-const int whiteLED = 8;
+const int fourBitLEDs[] = {4, 5, 7, 8};
+const int analogLED = 6;
 const int servoPin = 9;
 const int piezo = 10;
-const int analogLED = 11;
-const int serialRX = A1;
-const int serialTX = A2;
+const int whiteLED = 11;
 
 // Analog pin constants
-const int LDRPin = A0;
+//   Digital outputs:
+const int serialRX = A0;
+const int serialTX = A1;
+//   Analog inputs:
+const int LDRPin = A2;
 const int randomPin = A5;
 
 // Object for servo

@@ -29,7 +29,6 @@ void setup() {
   beginArduinoSerial();
   Serial.begin(115200);
   randomSeed(analogRead(randomPin));
-  servo.attach(servoPin);
   updateServo(0);
   
   initCommunication();
@@ -69,7 +68,7 @@ void fadeStatusLED(byte *fadeValue, bool *isGoingUpwards) {
     if (*isGoingUpwards) {
       *fadeValue *= 2;
       if (*fadeValue == 0) {
-        *fadeValue = 255;
+        *fadeValue = 128;
         *isGoingUpwards = false;
       }
       
@@ -213,9 +212,9 @@ void updateScore(GameResult result) {
 
 void handleVictory(bool didWin) {
   // Play the sound effects and switch on an LED
-  playInstantOfVictorySFX(true);
-  digitalWrite(whiteLED, HIGH);
-  playVictoryJingleSFX(true);
+  playInstantOfVictorySFX(didWin);
+  digitalWrite(whiteLED, didWin ? HIGH : LOW);
+  playVictoryJingleSFX(didWin);
   digitalWrite(whiteLED, LOW);
   playGameOverSFX();
 
@@ -228,8 +227,10 @@ void updateServo(int score) {
   // Maps between -80 to +80.
   score = constrain(score, -80, 80);
   score = map(score, -80, 80, 10, 170);
+  servo.attach(servoPin);
   servo.write(score);
-  delay(200); // Give it a little time to move
+  delay(250); // Give it a little time to move
+  servo.detach();
 }
 
 void reset() {

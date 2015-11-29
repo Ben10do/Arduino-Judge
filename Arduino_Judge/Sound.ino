@@ -136,7 +136,7 @@ void playVictoryJingleSFX(bool didWin) {
   }
 
   noTone(piezo);
-  delay(500);
+  delay(850);
 }
 
 void playGameOverSFX() {
@@ -156,14 +156,14 @@ void playGameOverSFX() {
 
   for (int i = 0; i < 5; i++) {
     tone(piezo, notes[i]);
-    delay(125);
+    delay(130);
   }
 
   for (int i = 5; i < 8; i++) {
     tone(piezo, notes[i]);
-    delay(250);
+    delay(260);
     noTone(piezo);
-    delay(250);
+    delay(260);
   }
 }
 
