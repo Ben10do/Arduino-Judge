@@ -340,6 +340,24 @@ void playCommunicationErrorSFX() {
   noTone(piezo);
 }
 
+//void playWhiteNoiseBurst() {
+//  // Generates white noise briefly.
+//  // The call to random() takes about 96µs anyway, so no
+//  // need to add a call to delayMicroseconds() in the loop.
+//
+//  unsigned int beforeMillis = millis();
+//  
+//  for (int i = 0; i < 1000; i++) {
+//    digitalWrite(piezo, random(2));
+//  }
+//
+//  digitalWrite(piezo, LOW);
+//
+//  unsigned int afterMillis = millis();
+//  unsigned int totalMillis = afterMillis - beforeMillis;
+//  Serial.println(totalMillis); // 102
+//}
+
 int generateNoteFreq(int n) {
   // Generates the approx. frequency of a musical note
   // n is the note number, where A4 (440Hz) is n = 49.
