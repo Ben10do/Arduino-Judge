@@ -31,8 +31,6 @@ GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
 
     default:
       handleCommunicationError();
-      // TODO: Should this have a return statement?
-      // It'll never be reached!
   }
 }
 

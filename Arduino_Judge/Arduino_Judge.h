@@ -77,3 +77,6 @@ const int randomPin = A5;
 // Object for servo
 Servo servo;
 
+// Stating that this function does not return.
+void reset() __attribute__((noreturn));
+

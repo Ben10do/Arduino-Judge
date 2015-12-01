@@ -7,6 +7,11 @@
 
 // Sound frequencies (_s_ means sharp)
 const int A_2 = 110;
+const int Ds3 = 156;
+const int E_3 = 165;
+const int A_3 = 220;
+const int Ds4 = 311;
+const int E_4 = 330;
 const int Fs4 = 370;
 const int Gs4 = 415;
 const int A_4 = 440;
@@ -88,6 +93,162 @@ void playCountdownSFX(int delayTime) {
   tone(piezo, pitch / 2, 40);
 }
 
+void playScoreSFX(bool didWin) {
+  // Plays a sound effect about who won the point
+  int pitches[] = {A_4, E_5};
+  
+  if (didWin && !amPlayerTwo) {
+    // P1 (me) won
+    pitches[0] = A_4;
+    pitches[1] = E_5;
+
+  } else if (!didWin && amPlayerTwo) {
+    // P1 (other player) won
+    pitches[0] = E_4;
+    pitches[1] = A_3;
+    
+  } else if (didWin && amPlayerTwo) {
+    // P2 (me) won
+    pitches[0] = E_5;
+    pitches[1] = B_5;
+    
+  } else if (!didWin && !amPlayerTwo) {
+    // P2 (other player) won
+    pitches[0] = B_4;
+    pitches[1] = E_4;
+  }
+
+  tone(piezo, pitches[0]);
+  delay(90);
+  tone(piezo, pitches[1]);
+  delay(90);
+  noTone(piezo);
+  delay(500);
+}
+
+void playCorrectAttackSFX(bool didAttack) {
+  // Played if you rightfully attack.
+  if (didAttack) {
+    tone(piezo, E_5);
+    delay(30);
+
+    for (int pitch = E_5; pitch >= E_4; pitch -= 15) {
+      tone(piezo, pitch);
+      delay(1);
+    }
+
+    tone(piezo, E_4, 60);
+    delay(152);
+    
+  } else {
+    tone(piezo, E_7, 30);
+    delay(60);
+    
+    tone(piezo, E_3);
+    delay(120);
+  }
+
+  noTone(piezo);
+  delay(700);
+  playScoreSFX(didAttack);
+}
+
+void playIncorrectAttackSFX(bool didAttack) {
+  if (didAttack) {
+    tone(piezo, E_5);
+    delay(30);
+
+
+    for (int pitch = E_5; pitch >= Ds3; pitch -= 15) {
+      // 34ms
+      tone(piezo, pitch);
+      delay(1);
+    }
+
+    tone(piezo, Ds3);
+    delay(152);
+    
+  } else {
+    tone(piezo, E_7, 30);
+    delay(60);
+    
+    tone(piezo, E_3, 120);
+    delay(156);
+    
+  }
+  
+  noTone(piezo);
+  delay(700);
+  playScoreSFX(!didAttack);
+}
+
+void playCorrectDodgeSFX(bool didDodge) {
+  // Played when you rightfully dodge.
+  if (didDodge) {
+    // Play SFX
+    tone(piezo, E_5);
+    delay(30);
+
+    // Slide down to B_4
+    for (int pitch = E_5; pitch >= B_4; pitch -= 5) {
+      tone(piezo, pitch);
+      delay(1);
+    }
+
+    delay(40);
+
+    // Slide back up to E_5
+    for (int pitch = B_4; pitch <= E_5; pitch += 5) {
+      tone(piezo, pitch);
+      delay(1);
+    }
+
+    delay(50);
+    noTone(piezo);
+    
+  } else {
+    delay(188);
+  }
+
+  delay(700);
+  playScoreSFX(didDodge);
+}
+
+void playIncorrectDodgeSFX(bool didDodge) {
+  // Played when you dodge, but could've attacked!
+  if (didDodge) {
+    // Play SFX
+    tone(piezo, E_5);
+    delay(30);
+
+    // Slide down to B_5
+    for (int pitch = E_5; pitch >= B_4; pitch -= 4) {
+      tone(piezo, pitch);
+      delay(1);
+    }
+
+    delay(40);
+
+    // Slide down further to exaggerate that you've messed up
+    for (int pitch = B_4; pitch >= Ds4; pitch--) {
+      tone(piezo, pitch);
+      delay(1);
+    }
+
+    delay(30);
+
+    noTone(piezo);
+
+  } else {
+    // Wait for the other player to finish doing what on
+    // earth they're doing
+    delay(326);
+  }
+
+  delay(700);
+  playScoreSFX(!didDodge);
+}
+
 void playInstantOfVictorySFX(bool didWin) {
   // Played the moment the servo hits ±80.
   if (didWin) {
@@ -98,6 +259,7 @@ void playInstantOfVictorySFX(bool didWin) {
     noTone(piezo);
     
   } else {
+    // Let the winner have their glory
     delay(5 * 20);
   }
 
@@ -110,18 +272,20 @@ void playVictoryJingleSFX(bool didWin) {
     int notes[] = {E_5, B_5, A_5, E_6, B_5, E_5};
 
     for (int i = 0; i < 4; i++) {
+      // Play the first four notes
       tone(piezo, notes[i], 100);
       delay(200);
       tone(piezo, notes[i]);
       delay(100);
     }
 
+    // Play the last two notes with a different rhythm
     tone(piezo, notes[4], 100);
     delay(200);
     tone(piezo, notes[5]);
     delay(100);
 
-    // Cheeky vibrato effect
+    // Adds some vibrato to the last note!
     int vibratoOffset = 0;
     for (int i = 0; i <= 28; i++) {
       tone(piezo, notes[5] + vibratoOffset);
@@ -130,6 +294,8 @@ void playVictoryJingleSFX(bool didWin) {
     }
     
   } else {
+    // Harmonise with the winner's last note
+    // (but don't go all vibrato-y about it)
     delay(1400);
     tone(piezo, Fs4);
     delay(800);

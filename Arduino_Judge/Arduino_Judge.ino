@@ -2,10 +2,10 @@
  * Arduino_Judge.ino
  * ARDUINO_JUDGE
  * 
- * Partially based on Nintendo's Game & Watch Judge game.
  * Is your piezo higher than their's? Is your LED flashing
  * the fastest? Good - time to whack them with a hammer!
  * (...metaphorically speaking, of course)
+ * Partially based on Nintendo's Game & Watch Judge game.
  * 
  * By: Daniel Barlow and Ben Hetherington
  */
@@ -91,13 +91,12 @@ void loop() {
   playCountdownSFX(countdownDelay);
   GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
 
-  // Clearing up after the game
-  setAllLEDs(LOW);
+  // Clearing up after the game, if it used the piezo.
   noTone(piezo);
   
   // TODO: Play relevant SFX/Animations
   updateScore(result);
-  flashHigherPlayersLED(myNumber, otherNumber);
+  setAllLEDs(LOW);
 }
 
 // Button interrupts
@@ -144,10 +143,10 @@ void setAllLEDs(bool value) {
   digitalWrite(analogLED, value);
 }
 
-void flashHigherPlayersLED(byte myNumber, byte otherNumber) {
+void flashHigherPlayersLED(bool hadHigherNumber) {
   // Flashes the white LED of the player that had the higher
   // random number (and so had a higher note, etc.)
-  if (myNumber >= otherNumber) {
+  if (hadHigherNumber) {
     for (int i = 0; i < 3; i++) {
       digitalWrite(whiteLED, HIGH);
       delay(250);
@@ -163,37 +162,51 @@ void updateScore(GameResult result) {
   // Each equivalent case must mirror each other!
   // e.g. CorrectAttack increases the score by correctAttackPoints,
   // whilst WasCorrectlyAttacked decreases the score by correctAttackPoints.
+  bool hadHigherNumber;
+  
   switch (result) {
     case CorrectAttack:
       score += correctAttackPoints;
+      hadHigherNumber = true;
       break;
 
     case WasCorrectlyAttacked:
       score -= correctAttackPoints;
+      hadHigherNumber = false;
       break;
 
     case IncorrectAttack:
       score -= incorrectAttackPoints;
+      hadHigherNumber = false;
       break;
 
     case WasIncorrectlyAttacked:
       score += incorrectAttackPoints;
+      hadHigherNumber = true;
       break;
     
     case CorrectDodge:
       score += correctDodgePoints;
+      hadHigherNumber = false;
+      playCorrectDodgeSFX(true);
       break;
 
     case WasCorrectlyDodged:
       score -= correctDodgePoints;
+      hadHigherNumber = true;
+      playCorrectDodgeSFX(false);
       break;
     
     case IncorrectDodge:
       score -= incorrectDodgePoints;
+      hadHigherNumber = true;
+      playIncorrectDodgeSFX(true);
       break;
       
     case WasIncorrectlyDodged:
       score += incorrectDodgePoints;
+      hadHigherNumber = false;
+      playIncorrectDodgeSFX(false);
       break;
 
     default:
@@ -207,6 +220,8 @@ void updateScore(GameResult result) {
     handleVictory(true);
   } else if (score <= -80) {
     handleVictory(false);
+  } else {
+    flashHigherPlayersLED(hadHigherNumber);
   }
 }
 
