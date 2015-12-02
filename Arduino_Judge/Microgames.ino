@@ -35,15 +35,86 @@ GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
 }
 
 GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
-  // Piezo - highest note
-  // TODO: Must write this microgame!
-  return GameTied;
+  //Game variables.
+  GameResult gameState = GameTied;
+
+  //TODO: Set the pitch.
+  
+  //Keep going until the game is no longer tied.
+  while (gameState == GameTied) {
+    
+    if (lowerButtonPressed) {
+      //Was the player correct to press the lower button.
+      if (myNumber < otherNumber) {
+        //Yes.
+        gameState = CorrectDodge;
+      } else {
+        //No.
+        gameState = IncorrectDodge;
+      }
+    } else if(higherButtonPressed) {
+      //Was the player correct to press the higher button.
+      if (myNumber < otherNumber) {
+        //No.
+        gameState = IncorrectAttack;
+      } else {
+        //Yes.
+        gameState = CorrectAttack;
+      }
+    }
+    
+    // Comunicate the current game state.
+    GameResult communicatedGameState = communicateGameStatus(gameState);
+    if (communicatedGameState != GameTied) {
+      digitalWrite(analogLED, LOW);
+      return communicatedGameState;
+    }
+  }
 }
 
 GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
-  // Piezo - fastest rhythm
-  // TODO: Must write this microgame!
-  return GameTied;
+  //Game variables.
+  GameResult gameState = GameTied;
+  int Period = (myNumber+1)*200;
+  
+  //Keep going until the game is no longer tied.
+  while (gameState == GameTied) {
+
+    //Work out if the pizeo should be on or off.
+    int timeSinceGameStart = millis() - millisAtGameStart;
+    int x =  timeSinceGameStart/2; //TODO: Name this better.
+    if (x%2 == 0) {
+      tone(piezo,1760);
+    } else {
+      noTone(piezo);
+    }
+    if (lowerButtonPressed) {
+      //Was the player correct to press the lower button.
+      if (myNumber < otherNumber) {
+        //Yes.
+        gameState = CorrectDodge;
+      } else {
+        //No.
+        gameState = IncorrectDodge;
+      }
+    } else if(higherButtonPressed) {
+      //Was the player correct to press the higher button.
+      if (myNumber < otherNumber) {
+        //No.
+        gameState = IncorrectAttack;
+      } else {
+        //Yes.
+        gameState = CorrectAttack;
+      }
+    }
+    
+    // Comunicate the current game state.
+    GameResult communicatedGameState = communicateGameStatus(gameState);
+    if (communicatedGameState != GameTied) {
+      noTone(piezo);
+      return communicatedGameState;
+    }
+  }
 }
 
 GameResult runLEDNumber(byte myNumber, byte otherNumber) {
@@ -125,9 +196,48 @@ GameResult runLEDBrightest(byte myNumber, byte otherNumber) {
 }
 
 GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
-  // LED - fastest frequency
-  // TODO: Must write this microgame!
-  return GameTied;
+  //Game variables.
+  GameResult gameState = GameTied;
+  int Period = (myNumber+1)*200;
+  
+  //Keep going until the game is no longer tied.
+  while (gameState == GameTied) {
+
+    //Work out if the LED should be on or off.
+    int timeSinceGameStart = millis() - millisAtGameStart;
+    int x =  timeSinceGameStart/2; //TODO: Name this better.
+    if (x%2 == 0) {
+      digitalWrite(analogLED, HIGH);
+    } else {
+      digitalWrite(analogLED, LOW);
+    }
+    if (lowerButtonPressed) {
+      //Was the player correct to press the lower button.
+      if (myNumber < otherNumber) {
+        //Yes.
+        gameState = CorrectDodge;
+      } else {
+        //No.
+        gameState = IncorrectDodge;
+      }
+    } else if(higherButtonPressed) {
+      //Was the player correct to press the higher button.
+      if (myNumber < otherNumber) {
+        //No.
+        gameState = IncorrectAttack;
+      } else {
+        //Yes.
+        gameState = CorrectAttack;
+      }
+    }
+    
+    // Comunicate the current game state.
+    GameResult communicatedGameState = communicateGameStatus(gameState);
+    if (communicatedGameState != GameTied) {
+      digitalWrite(analogLED, LOW);
+      return communicatedGameState;
+    }
+  }
 }
 
 GameResult runLDRCover() {
