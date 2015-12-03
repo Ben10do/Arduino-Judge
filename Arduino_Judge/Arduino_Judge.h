@@ -20,7 +20,7 @@ typedef enum GameID {
 
 // The maximum RNG numbers for each game
 // (last game doesn't matter, so we'll just say a whole byte)
-byte gameMaxNumbers[6] = {36, 10, 14, 5, 10, 100};
+byte gameMaxNumbers[6] = {12, 10, 14, 5, 10, 100};
 
 // The possible game outcomes
 typedef enum GameResult {

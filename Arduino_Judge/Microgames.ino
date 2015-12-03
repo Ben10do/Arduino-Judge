@@ -38,7 +38,7 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
   //Game variables.
   GameResult gameState = GameTied;
 
-  //TODO: Set the pitch.
+  tone(piezo, generateNoteFreq(myNumber));
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {
