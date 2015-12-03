@@ -47,7 +47,7 @@ void playHandshakeCompleteSFX() {
   tone(piezo, !amPlayerTwo ? E_5 : Gs5);
   delay(125);
   noTone(piezo);
-  delay(250);
+  delay(750);
 }
 
 void playCountdownSFX(int delayTime) {
@@ -81,8 +81,19 @@ void playCountdownSFX(int delayTime) {
         break;
     }
   }
+
+  updateLCD(F("Starting next"), 0);
   
   for (int i = 0; i < 3; i++) {
+    // TODO: Refactor this?
+    if (i == 0) {
+      updateLCD(F("game in 3..."), 1);
+    } else if (i == 1) {
+      updateLCD(F("game in 2..."), 1);
+    } else if (i == 2) {
+      updateLCD(F("game in 1..."), 1);
+    }
+    
     tone(piezo, pitch, 40);
     delay(delayTime);
     noTone(piezo);
@@ -134,11 +145,11 @@ void playCorrectAttackSFX(bool didAttack) {
 
     for (int pitch = E_5; pitch >= E_4; pitch -= 15) {
       tone(piezo, pitch);
-      delay(1);
+      delay(1); // Takes 23ms
     }
 
     tone(piezo, E_4, 60);
-    delay(152);
+    delay(127);
     
   } else {
     tone(piezo, E_7, 30);
@@ -224,7 +235,7 @@ void playIncorrectDodgeSFX(bool didDodge) {
     // Slide down to B_5
     for (int pitch = E_5; pitch >= B_4; pitch -= 4) {
       tone(piezo, pitch);
-      delay(1);
+      delay(1); // 42ms
     }
 
     delay(40);
@@ -232,19 +243,18 @@ void playIncorrectDodgeSFX(bool didDodge) {
     // Slide down further to exaggerate that you've messed up
     for (int pitch = B_4; pitch >= Ds4; pitch--) {
       tone(piezo, pitch);
-      delay(1);
+      delay(1); // 183ms
     }
 
     delay(30);
 
-    noTone(piezo);
-
   } else {
     // Wait for the other player to finish doing what on
     // earth they're doing
-    delay(326);
+    delay(335);
   }
 
+  noTone(piezo);
   delay(700);
   playScoreSFX(!didDodge);
 }
@@ -260,7 +270,7 @@ void playInstantOfVictorySFX(bool didWin) {
     
   } else {
     // Let the winner have their glory
-    delay(5 * 20);
+    delay(100);
   }
 
   delay(750);
@@ -298,7 +308,7 @@ void playVictoryJingleSFX(bool didWin) {
     // (but don't go all vibrato-y about it)
     delay(1400);
     tone(piezo, Fs4);
-    delay(800);
+    delay(825);
   }
 
   noTone(piezo);
@@ -335,6 +345,9 @@ void playGameOverSFX() {
 
 void playCommunicationErrorSFX() {
   // Indicates that a communication error has occured.
+  updateLCD(F("Comm. Err."), 0);
+  updateLCD(F("Resetting..."), 1);
+  
   tone(piezo, A_2);
   delay(250);
   noTone(piezo);

@@ -36,6 +36,9 @@ GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
 }
 
 GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
+  updateLCD(F("Attack if your"), 0);
+  updateLCD(F("note is higher!"), 1);
+  
   //Game variables.
   GameResult gameState = GameTied;
 
@@ -74,6 +77,9 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
 }
 
 GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
+  updateLCD(F("Attack if your"), 0);
+  updateLCD(F("rhythm's faster!"), 1);
+  
   //Game variables.
   GameResult gameState = GameTied;
   int Period = (myNumber+1)*200;
@@ -119,6 +125,9 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
 }
 
 GameResult runLEDNumber(byte myNumber, byte otherNumber) {
+  updateLCD(F("Attack if your"), 0);
+  updateLCD(F("number's higher!"), 1);
+  
   // LED - 4-bit highest number
   GameResult gameState = GameTied;
   setFourBitLEDs(myNumber + 1);
@@ -157,6 +166,9 @@ GameResult runLEDNumber(byte myNumber, byte otherNumber) {
 }
 
 GameResult runLEDBrightest(byte myNumber, byte otherNumber) {
+  updateLCD(F("Attack if your"), 0);
+  updateLCD(F("LED's brighter!"), 1);
+  
   // LED - brightest
   int brightness = 55 + (myNumber * 40);
   GameResult gameState = GameTied;
@@ -197,6 +209,9 @@ GameResult runLEDBrightest(byte myNumber, byte otherNumber) {
 }
 
 GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
+  updateLCD(F("Attack if your"), 0);
+  updateLCD(F("LED's faster!"), 1);
+  
   //Game variables.
   GameResult gameState = GameTied;
   int Period = (myNumber+1)*200;
@@ -242,6 +257,9 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
 }
 
 GameResult runLDRCover() {
+  updateLCD(F("Quick! Cover"), 0);
+  updateLCD(F("the LDR!"), 1);
+  
   // LDR - first to cover
   digitalWrite(whiteLED, HIGH);
   

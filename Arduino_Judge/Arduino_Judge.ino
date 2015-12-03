@@ -24,6 +24,19 @@ void setup() {
   pinMode(analogLED, OUTPUT);
   pinMode(piezo, OUTPUT);
   pinMode(servoPin, OUTPUT);
+
+  // TODO: Set up shift register pins
+
+  // Show the startup stuffs
+  updateLCD(F(" ARDUINO JUDGE"), 0);
+  delay(2000);
+  
+  updateLCD(F("Daniel Barlow &"), 0);
+  updateLCD(F("Ben Hetherington"), 1);
+  delay(2000);
+
+  // TODO: Maybe make a sound effect or play a light show
+  // (just while the LCD is displaying its stuff)
   
   // Set up serial, random seed, and servo
   beginArduinoSerial();
@@ -36,7 +49,11 @@ void setup() {
 
 void initCommunication() {
   // Handshake; ensures that both Arduinos are in sync
+  clearSerialBuffer();
   bool handshakeDone = false;
+
+  updateLCD(F("Waiting for"), 0);
+  updateLCD(F("other Arduino..."), 1);
 
   // Animation variables
   byte fadeValue = 1;
@@ -51,11 +68,24 @@ void initCommunication() {
   // Decide on who should each player
   amPlayerTwo = determinePlayers();
 
-  // Indicate who's who, and play SFX
+  // Indicate who's who on the LED
   analogWrite(analogLED, 0);
   setFourBitLEDs(!amPlayerTwo ? 0b1100 : 0b0011);
+
+  // And do the same on the LCD
+  updateLCD(F("Connected!"), 0);
+  if (!amPlayerTwo) {
+    updateLCD(F("I'm P1!"), 1);
+  } else {
+    updateLCD(F("I'm P2!"), 1);
+  }
+
+  // Play SFX
   playHandshakeCompleteSFX();
   setFourBitLEDs(0b0000);
+
+  updateLCD(F("First to get"), 0);
+  updateLCD(F("80 ahead wins!"), 1);
   
   score = 0;
   // Ready to start the game!
@@ -84,30 +114,19 @@ void fadeStatusLED(byte *fadeValue, bool *isGoingUpwards) {
 void loop() {
   // Setting the next game and variables
   currentGame = decideOnGame(currentGame);
-  Serial.print("Game ID: ");
-  Serial.println(currentGame);
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
-  Serial.print("My number: ");
-  Serial.println(currentGame);
-  Serial.print("Other number: ");
-  Serial.println(currentGame);
-  int countdownDelay = 80 + (getSharedRandomNumber(8) * 10);
-  Serial.print("Countdown delay: ");
-  Serial.println(countdownDelay);
+  int countdownDelay = 95 + (getSharedRandomNumber(8) * 15);
 
   // Start the next game, with a count-in.
   playCountdownSFX(countdownDelay);
-  Serial.print("Finished Countdown.");
-  GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
-  Serial.print("Microgame complete.");
+  // GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
 
   // Clearing up after the game, if it used the piezo.
   noTone(piezo);
   
-  updateScore(result);
-  Serial.print("Updated score.");
+  // updateScore(result);
   setAllLEDs(LOW);
-  Serial.print("Restart loop.");
+  delay(800);
 }
 
 // Button interrupts
@@ -173,27 +192,32 @@ void updateScore(GameResult result) {
   // Each equivalent case must mirror each other!
   // e.g. CorrectAttack increases the score by correctAttackPoints,
   // whilst WasCorrectlyAttacked decreases the score by correctAttackPoints.
+  updateLCDForResult(result);
   bool hadHigherNumber;
   
   switch (result) {
     case CorrectAttack:
       score += correctAttackPoints;
       hadHigherNumber = true;
+      playCorrectAttackSFX(true);
       break;
 
     case WasCorrectlyAttacked:
       score -= correctAttackPoints;
       hadHigherNumber = false;
+      playCorrectAttackSFX(false);
       break;
 
     case IncorrectAttack:
       score -= incorrectAttackPoints;
       hadHigherNumber = false;
+      playIncorrectAttackSFX(true);
       break;
 
     case WasIncorrectlyAttacked:
       score += incorrectAttackPoints;
       hadHigherNumber = true;
+      playIncorrectAttackSFX(false);
       break;
     
     case CorrectDodge:
@@ -239,9 +263,20 @@ void updateScore(GameResult result) {
 void handleVictory(bool didWin) {
   // Play the sound effects and switch on an LED
   playInstantOfVictorySFX(didWin);
+
+  // Update LCD
+  if (didWin ^ amPlayerTwo) {
+    updateLCD(F("    P1 won!"), 0);
+  } else {
+    updateLCD(F("    P2 won!"), 0);
+  }
+  updateLCD(F(""), 1);
+  
   digitalWrite(whiteLED, didWin ? HIGH : LOW);
   playVictoryJingleSFX(didWin);
+  
   digitalWrite(whiteLED, LOW);
+  updateLCD(F("   GAME OVER"), 0);
   playGameOverSFX();
 
   // Resetting the servo, before restarting the game
@@ -259,6 +294,48 @@ void updateServo(int score) {
   servo.detach();
 }
 
+void updateLCDForResult(GameResult result) {
+  if ((result == CorrectAttack && !amPlayerTwo) || (result == WasCorrectlyAttacked && amPlayerTwo)) {
+    updateLCD(F("P1 hammered P2!"), 0);
+    updateLCD(F(""), 1);
+    
+  } else if ((result == WasCorrectlyAttacked && !amPlayerTwo) || (result == CorrectAttack && amPlayerTwo)) {
+    updateLCD(F("P2 hammered P1!"), 0);
+    updateLCD(F(""), 1);
+
+  } else if ((result == IncorrectAttack && !amPlayerTwo) || (result == WasIncorrectlyAttacked && amPlayerTwo)) {
+    updateLCD(F("P1 should've"), 0);
+    updateLCD(F("dodged P2..."), 1);
+    
+  } else if ((result == WasIncorrectlyAttacked && !amPlayerTwo) || (result == IncorrectAttack && amPlayerTwo)) {
+    updateLCD(F("P2 should've"), 0);
+    updateLCD(F("dodged P1..."), 1);
+    
+  } else if ((result == CorrectDodge && !amPlayerTwo) || (result == WasCorrectlyDodged && amPlayerTwo)) {
+    updateLCD(F("P1 dodged P2's"), 0);
+    updateLCD(F("attack!"), 1);
+    
+  } else if ((result == WasCorrectlyDodged && !amPlayerTwo) || (result == CorrectDodge && amPlayerTwo)) {
+    updateLCD(F("P2 dodged P1's"), 0);
+    updateLCD(F("attack!"), 1);
+    
+  } else if ((result == IncorrectDodge && !amPlayerTwo) || (result == WasIncorrectlyDodged && amPlayerTwo)) {
+    updateLCD(F("P1 should've"), 0);
+    updateLCD(F("attacked P2..."), 1);
+    
+  } else if ((result == WasIncorrectlyDodged && !amPlayerTwo) || (result == IncorrectDodge && amPlayerTwo)) {
+    updateLCD(F("P2 should've"), 0);
+    updateLCD(F("attacked P1..."), 1);
+    
+  }
+}
+
+void updateLCD(String text, bool isBottomLine) {
+  // No-op for now
+  // isBottomLine == 0 for top line, == 1 for bottom
+  // Implement this using the shift register
+}
+
 void reset() {
   // Restarts the sketch
   // However, we have to reset all the hardware ourselves
@@ -266,6 +343,8 @@ void reset() {
   endArduinoSerial();
   Serial.end();
   setAllLEDs(LOW);
+  updateLCD(F(""), 0);
+  updateLCD(F(""), 1);
   noTone(piezo);
   servo.detach();
   

@@ -22,7 +22,7 @@ SoftwareSerial arduinoSerial(serialRX, serialTX);
 // Start/end functions
 
 void beginArduinoSerial() {
-  arduinoSerial.begin(4800);
+  arduinoSerial.begin(9600);
 }
 
 void endArduinoSerial() {
@@ -46,6 +46,7 @@ bool tryHandshake() {
         // If the other device has sent a handshake,
         // acknowledge it, and start the game
         arduinoSerial.write(handshakeResponse);
+        arduinoSerial.flush();
         return true;
 
       } else if (readByte == handshakeResponse) {
@@ -64,6 +65,7 @@ bool determinePlayers() {
   // The players are guaranteed to have been determined once
   // this function returns, but if there is no response, the
   // Arduino will lock up. This is fine for this project.
+  
   byte myRandomNum;
   byte otherArduinoRandomNum;
 
@@ -76,6 +78,9 @@ bool determinePlayers() {
   } else if (myRandomNum < otherArduinoRandomNum) {
     // We're P2
     return true;
+  } else {
+    // Shouldn't reach here
+    handleCommunicationError();
   }
 }
 
@@ -98,6 +103,7 @@ GameID decideOnGame(GameID previousGame) {
 //        }
 
         arduinoSerial.write(nextGame);
+        arduinoSerial.flush();
         return nextGame;
       }
     }
@@ -127,12 +133,14 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
   // this function returns.
 
+  Serial.println("communicateRandomNumbers()");
+
   while (arduinoSerial.available()) {
     // Discard any excess bytes that we don't need
     arduinoSerial.read();
   }
 
-  delay(5);
+  Serial.println("Go!");
 
   byte myRandomNum;
   byte otherArduinoRandomNum;
@@ -144,11 +152,20 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   }
 
   do {
+    delay(5);
+    Serial.println("Loop");
     myRandomNum = random(max);
     arduinoSerial.write(myRandomNum);
+    Serial.print("me: ");
+    Serial.println(myRandomNum);
+//    arduinoSerial.flush();
+//    Serial.println("flushed");
 
     waitForResponse();
+    Serial.println("got response");
     otherArduinoRandomNum = arduinoSerial.read();
+    Serial.print("them: ");
+    Serial.println(otherArduinoRandomNum);
   } while (myRandomNum == otherArduinoRandomNum);
 
   if (otherArduinoRandomNum >= max) {
@@ -171,8 +188,6 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   if (otherNumber) {
     *otherNumber = otherArduinoRandomNum;
   }
-  
-  delay(5);
 }
 
 int getSharedRandomNumber(int max) {
@@ -182,6 +197,7 @@ int getSharedRandomNumber(int max) {
     // Then it's up to us to get the number!
     int number = random(max);
     arduinoSerial.write(number);
+    arduinoSerial.flush();
     return number;
 
   } else {
@@ -204,6 +220,7 @@ GameResult communicateGameStatus(GameResult myStatus) {
   //                  CorrectDodge, or IncorrectDodge.
 
   arduinoSerial.write(myStatus);
+  arduinoSerial.flush();
   waitForResponse();
   GameResult otherStatus = (GameResult)arduinoSerial.read();
 
@@ -226,6 +243,7 @@ GameResult communicateGameStatus(GameResult myStatus) {
 
     arduinoSerial.write(myResponseTime & 0xFF); // Send least significant byte first
     arduinoSerial.write(myResponseTime >> 8);   // (i.e. little-endian)
+    arduinoSerial.flush();
 
     waitForResponse();
     unsigned int otherResponseTime = arduinoSerial.read();
@@ -250,6 +268,12 @@ GameResult communicateGameStatus(GameResult myStatus) {
       }
 
     }
+  }
+}
+
+void clearSerialBuffer() {
+  while (arduinoSerial.available()) {
+    arduinoSerial.read();
   }
 }
 
