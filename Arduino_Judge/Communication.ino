@@ -1,10 +1,10 @@
 /*
  * Communication.ino
  * ARDUINO_JUDGE
- * 
+ *
  * Includes all the functions that are related to communicating
  * between the two Arduinos.
- * 
+ *
  * The communication is relatively simple, and is state based
  * (both Arduinos should expect to send and recieve the same
  * kind of data at the same time).
@@ -35,19 +35,19 @@ bool tryHandshake() {
   // Returns true if handshake was successful;
   // otherwise, returns false.
   arduinoSerial.write(handshakeInit);
-  
+
   for (int i = 0; i < 20; i++) {
     // Wait for a response
     delay(5);
     if (arduinoSerial.available()) {
       byte readByte = arduinoSerial.read();
-      
+
       if (readByte == handshakeInit) {
         // If the other device has sent a handshake,
         // acknowledge it, and start the game
         arduinoSerial.write(handshakeResponse);
         return true;
-        
+
       } else if (readByte == handshakeResponse) {
         // If the other device has acknowledged a handshake,
         // start the game.
@@ -66,13 +66,13 @@ bool determinePlayers() {
   // Arduino will lock up. This is fine for this project.
   byte myRandomNum;
   byte otherArduinoRandomNum;
-  
+
   communicateRandomNumbers(0x100, &myRandomNum, &otherArduinoRandomNum);
-  
+
   if (myRandomNum > otherArduinoRandomNum) {
     // We're P1
     return false;
-    
+
   } else if (myRandomNum < otherArduinoRandomNum) {
     // We're P2
     return true;
@@ -89,13 +89,13 @@ GameID decideOnGame(GameID previousGame) {
     // Then it's up to us to decide the next game!
     for (;;) {
       GameID nextGame = (GameID)random(6);
-      
+
       if (nextGame != previousGame) {
         if (nextGame == LEDNumber) {
           // Get another number; makes this game less common
           nextGame = (GameID)random(6);
         }
-        
+
         arduinoSerial.write(nextGame);
         return nextGame;
       }
@@ -109,29 +109,30 @@ GameID decideOnGame(GameID previousGame) {
 }
 
 void waitForResponse() {
-  for (int i = 0; i < 5000; i++) {
+  for (int i = 0; i < 50000; i++) {
     // Call to arduinoSerial.available() takes ≈20µs
-    // Consequently, the timeout is ≈0.1s.
+    // Consequently, the timeout is ≈1s.
     if (arduinoSerial.available()) {
       return;
     }
   }
-  
+
   // If we've reached here, we've timed out.
+  Serial.println("Timeout!");
   handleCommunicationError();
 }
 
 void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
   // this function returns.
-  
-//  while (arduinoSerial.available()) {
-//    // Discard any excess bytes that we don't need
-//    arduinoSerial.read();
-//  }
-//  
-//  delay(5);
-  
+
+  while (arduinoSerial.available()) {
+    // Discard any excess bytes that we don't need
+    arduinoSerial.read();
+  }
+
+  delay(5);
+
   byte myRandomNum;
   byte otherArduinoRandomNum;
 
@@ -140,11 +141,11 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
     // and that we're not always going to get the same number!
     max = 0x100;
   }
-  
+
   do {
     myRandomNum = random(max);
     arduinoSerial.write(myRandomNum);
-    
+
     waitForResponse();
     otherArduinoRandomNum = arduinoSerial.read();
   } while (myRandomNum == otherArduinoRandomNum);
@@ -161,7 +162,7 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   }
 
   // Pass the numbers back (checking for NULL in the process)
-  
+
   if (myNumber) {
     *myNumber = myRandomNum;
   }
@@ -179,7 +180,7 @@ int getSharedRandomNumber(int max) {
     int number = random(max);
     arduinoSerial.write(number);
     return number;
-      
+
   } else {
     // Wait to hear what the number is
     waitForResponse();
@@ -206,35 +207,35 @@ GameResult communicateGameStatus(GameResult myStatus) {
   if (myStatus == GameTied && otherStatus == GameTied) {
     // Then keep the game going!
     return GameTied;
-    
+
   } else if (myStatus == GameTied && otherStatus != GameTied) {
     // Then we'll return the opposite status
     return (GameResult)((int)otherStatus + 2);
-    
+
   } else if (myStatus != GameTied && otherStatus == GameTied) {
     // Then we'll return our status
     return myStatus;
-    
+
   } else {
     // If both players reacted before the Arduinos could
     // communicate, we're going to have to work out who was first.
     unsigned int myResponseTime = millisAtButtonPress - millisAtGameStart;
-    
+
     arduinoSerial.write(myResponseTime & 0xFF); // Send least significant byte first
     arduinoSerial.write(myResponseTime >> 8);   // (i.e. little-endian)
-    
+
     waitForResponse();
     unsigned int otherResponseTime = arduinoSerial.read();
     otherResponseTime |= arduinoSerial.read() << 8;
-    
+
     if (myResponseTime < otherResponseTime) {
       // If this Arduino was fastest, then it's as we originally thought.
       return myStatus;
-      
+
     } else if (myResponseTime > otherResponseTime) {
       // If this Arduino was slower, then I'll have to base it on the other Arduino.
       return (GameResult)((int)otherStatus + 2);
-      
+
     } else {
       // If both are the same, we'll let player one decide who wins.
       bool winningPlayerIsPlayerTwo = getSharedRandomNumber(2);
@@ -244,7 +245,7 @@ GameResult communicateGameStatus(GameResult myStatus) {
       } else {
         return (GameResult)((int)otherStatus + 2);
       }
-      
+
     }
   }
 }
