@@ -22,7 +22,7 @@ SoftwareSerial arduinoSerial(serialRX, serialTX);
 // Start/end functions
 
 void beginArduinoSerial() {
-  arduinoSerial.begin(9600);
+  arduinoSerial.begin(4800);
 }
 
 void endArduinoSerial() {
@@ -88,13 +88,14 @@ GameID decideOnGame(GameID previousGame) {
   if (!amPlayerTwo) {
     // Then it's up to us to decide the next game!
     for (;;) {
-      GameID nextGame = (GameID)random(6);
+      const int noOfGames = 5;
+      GameID nextGame = (GameID)random(noOfGames);
 
       if (nextGame != previousGame) {
-        if (nextGame == LEDNumber) {
-          // Get another number; makes this game less common
-          nextGame = (GameID)random(6);
-        }
+//        if (nextGame == LEDNumber) {
+//          // Get another number; makes this game less common
+//          nextGame = (GameID)random(noOfGames);
+//        }
 
         arduinoSerial.write(nextGame);
         return nextGame;
@@ -170,6 +171,8 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   if (otherNumber) {
     *otherNumber = otherArduinoRandomNum;
   }
+  
+  delay(5);
 }
 
 int getSharedRandomNumber(int max) {
