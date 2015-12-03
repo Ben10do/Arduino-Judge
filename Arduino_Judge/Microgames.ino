@@ -84,7 +84,7 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
     int timeSinceGameStart = millis() - millisAtGameStart;
     int x =  timeSinceGameStart/2; //TODO: Name this better.
     if (x%2 == 0) {
-      tone(piezo,1760);
+      tone(piezo, 988); // B_5
     } else {
       noTone(piezo);
     }
