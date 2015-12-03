@@ -8,6 +8,7 @@
 GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
   lowerButtonPressed = false;
   higherButtonPressed = false;
+  enableInterrupts();
   millisAtGameStart = millis();
   
   switch (game) {
@@ -38,7 +39,7 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
   //Game variables.
   GameResult gameState = GameTied;
 
-  tone(piezo, generateNoteFreq(myNumber));
+  tone(piezo, generateNoteFreq(myNumber) + 52);
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {

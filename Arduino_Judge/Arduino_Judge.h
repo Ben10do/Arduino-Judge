@@ -38,7 +38,7 @@ typedef enum GameResult {
 // Game variables
 bool amPlayerTwo;
 GameID currentGame = (GameID)2; // Won't start with the numbers game
-byte score = 0;
+signed char score = 0;
 
 // The randomly generated numbers used by each Arduino
 byte myNumber = 0;

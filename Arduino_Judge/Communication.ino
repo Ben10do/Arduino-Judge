@@ -125,6 +125,13 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
   // this function returns.
   
+//  while (arduinoSerial.available()) {
+//    // Discard any excess bytes that we don't need
+//    arduinoSerial.read();
+//  }
+//  
+//  delay(5);
+  
   byte myRandomNum;
   byte otherArduinoRandomNum;
 
@@ -143,6 +150,13 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   } while (myRandomNum == otherArduinoRandomNum);
 
   if (otherArduinoRandomNum >= max) {
+    Serial.println("Hang on, the other Arduino's number is wrong!");
+    Serial.print("max: ");
+    Serial.println(max);
+    Serial.print("My number: ");
+    Serial.println(myRandomNum);
+    Serial.print("Other number: ");
+    Serial.println(otherArduinoRandomNum);
     handleCommunicationError();
   }
 

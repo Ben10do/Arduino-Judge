@@ -84,19 +84,30 @@ void fadeStatusLED(byte *fadeValue, bool *isGoingUpwards) {
 void loop() {
   // Setting the next game and variables
   currentGame = decideOnGame(currentGame);
+  Serial.print("Game ID: ");
+  Serial.println(currentGame);
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
+  Serial.print("My number: ");
+  Serial.println(currentGame);
+  Serial.print("Other number: ");
+  Serial.println(currentGame);
   int countdownDelay = 80 + (getSharedRandomNumber(8) * 10);
+  Serial.print("Countdown delay: ");
+  Serial.println(countdownDelay);
 
   // Start the next game, with a count-in.
   playCountdownSFX(countdownDelay);
+  Serial.print("Finished Countdown.");
   GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
+  Serial.print("Microgame complete.");
 
   // Clearing up after the game, if it used the piezo.
   noTone(piezo);
   
-  // TODO: Play relevant SFX/Animations
   updateScore(result);
+  Serial.print("Updated score.");
   setAllLEDs(LOW);
+  Serial.print("Restart loop.");
 }
 
 // Button interrupts
