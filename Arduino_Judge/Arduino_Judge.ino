@@ -13,6 +13,8 @@
 #include <Servo.h>
 #include "Arduino_Judge.h"
 
+const int maxScore = 40;
+
 void setup() {
   // Setup all the pins
   pinMode(lowerButton, INPUT);
@@ -85,7 +87,8 @@ void initCommunication() {
   setFourBitLEDs(0b0000);
 
   updateLCD(F("First to get"), 0);
-  updateLCD(F("80 ahead wins!"), 1);
+  // Print maxScore, not 40
+  updateLCD(F("40 ahead wins!"), 1);
   
   score = 0;
   // Ready to start the game!
@@ -113,8 +116,7 @@ void fadeStatusLED(byte *fadeValue, bool *isGoingUpwards) {
 
 void loop() {
   // Setting the next game and variables
-//  currentGame = decideOnGame(currentGame);
-  currentGame = PiezoPitch;
+  currentGame = decideOnGame(currentGame);
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
   int countdownDelay = 95 + (getSharedRandomNumber(8) * 15);
 
@@ -122,12 +124,12 @@ void loop() {
   playCountdownSFX(countdownDelay);
   GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
 
-  // Clearing up after the game, if it used the piezo.
-  noTone(piezo);
+  Serial.println("Back in loop()");
   
   updateScore(result);
   setAllLEDs(LOW);
   delay(800);
+  tone(piezo, 440, 10);
 }
 
 // Button interrupts
@@ -135,17 +137,21 @@ void loop() {
 // Return as quickly as possible, to avoid missing serial inputs
 
 void lowerButtonPressedInterrupt() {
-  lowerButtonPressed = true;
-  higherButtonPressed = false;
-  millisAtButtonPress = millis();
-  disableInterrupts(); // Prevents repeated presses
+  if (!higherButtonPressed && !lowerButtonPressed) {
+    lowerButtonPressed = true;
+    higherButtonPressed = false;
+    millisAtButtonPress = millis();
+//  disableInterrupts(); // Prevents repeated presses
+  }
 }
 
 void higherButtonPressedInterrupt() {
-  higherButtonPressed = true;
-  lowerButtonPressed = false;
-  millisAtButtonPress = millis();
-  disableInterrupts(); // Prevents repeated presses
+  if (!higherButtonPressed && !lowerButtonPressed) {
+    higherButtonPressed = true;
+    lowerButtonPressed = false;
+    millisAtButtonPress = millis();
+//  disableInterrupts(); // Prevents repeated presses
+  }
 }
 
 void enableInterrupts() {
@@ -154,8 +160,8 @@ void enableInterrupts() {
 }
 
 void disableInterrupts() {
-  detachInterrupt(digitalPinToInterrupt(lowerButton));
-  detachInterrupt(digitalPinToInterrupt(higherButton));
+//  detachInterrupt(digitalPinToInterrupt(lowerButton));
+//  detachInterrupt(digitalPinToInterrupt(higherButton));
 }
 
 // Additional functions
@@ -252,9 +258,9 @@ void updateScore(GameResult result) {
 
   updateServo(score);
 
-  if (score >= 80) {
+  if (score >= maxScore) {
     handleVictory(true);
-  } else if (score <= -80) {
+  } else if (score <= -maxScore) {
     handleVictory(false);
   } else {
     flashHigherPlayersLED(hadHigherNumber);
@@ -286,9 +292,9 @@ void handleVictory(bool didWin) {
 }
 
 void updateServo(int score) {
-  // Maps between -80 to +80.
-  score = constrain(score, -80, 80);
-  score = map(score, -80, 80, 10, 170);
+  // Maps between -40 to +40.
+  score = constrain(score, -maxScore, maxScore);
+  score = map(score, -maxScore, maxScore, 10, 170);
   servo.attach(servoPin);
   servo.write(score);
   delay(250); // Give it a little time to move

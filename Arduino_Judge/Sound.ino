@@ -378,6 +378,6 @@ int generateNoteFreq(int n) {
 
   // NOTE: Including pow() uses an extra 2,000 bytes!
   //       Replace if we run out of space.
-  return round(pow(2, (n-49)/12) + 440);
+  return round(pow(2, (n-49.0)/12.0) * 440.0);
 }
 

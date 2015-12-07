@@ -116,9 +116,9 @@ GameID decideOnGame(GameID previousGame) {
 }
 
 void waitForResponse() {
-  for (int i = 0; i < 50000; i++) {
+  for (int i = 0; i < 30000; i++) {
     // Call to arduinoSerial.available() takes ≈20µs
-    // Consequently, the timeout is ≈1s.
+    // Consequently, the timeout is ≈0.6s.
     if (arduinoSerial.available()) {
       return;
     }
@@ -133,14 +133,14 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // The numbers are guaranteed to have been determined once
   // this function returns.
 
+  delay(5);
+
   Serial.println("communicateRandomNumbers()");
 
-  while (arduinoSerial.available()) {
-    // Discard any excess bytes that we don't need
-    arduinoSerial.read();
-  }
-
-  Serial.println("Go!");
+//  while (arduinoSerial.available()) {
+//    // Discard any excess bytes that we don't need
+//    arduinoSerial.read();
+//  }
 
   byte myRandomNum;
   byte otherArduinoRandomNum;
@@ -193,6 +193,7 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
 int getSharedRandomNumber(int max) {
   // Returns a random number that will be shared by
   // both Arduinos. Decided by player one.
+  delay(5);
   if (!amPlayerTwo) {
     // Then it's up to us to get the number!
     int number = random(max);
@@ -219,10 +220,13 @@ GameResult communicateGameStatus(GameResult myStatus) {
   // Otherwise, send: CorrectAttack,   IncorrectAttack,
   //                  CorrectDodge, or IncorrectDodge.
 
-  arduinoSerial.write(myStatus);
   arduinoSerial.flush();
+  delay(5);
+  arduinoSerial.write(myStatus);
+  delay(50);
   waitForResponse();
-  GameResult otherStatus = (GameResult)arduinoSerial.read();
+  int otherStatusIndex = arduinoSerial.read();
+  GameResult otherStatus = (GameResult)otherStatusIndex;
 
   if (myStatus == GameTied && otherStatus == GameTied) {
     // Then keep the game going!

@@ -19,7 +19,7 @@ GameResult runMicrogame(GameID game, byte myNumber, byte otherNumber) {
       return runPiezoRhythm(myNumber, otherNumber);
 
     case LEDNumber:
-      return runPiezoRhythm(myNumber, otherNumber);
+      return runLEDNumber(myNumber, otherNumber);
 
     case LEDBrightest:
       return runLEDBrightest(myNumber, otherNumber);
@@ -42,12 +42,13 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
   //Game variables.
   GameResult gameState = GameTied;
 
-  tone(piezo, generateNoteFreq(myNumber) + 52);
+  tone(piezo, generateNoteFreq(myNumber + 40));
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {
     
     if (lowerButtonPressed) {
+      Serial.println("lowerButtonPressed");
       //Was the player correct to press the lower button.
       if (myNumber < otherNumber) {
         //Yes.
@@ -56,7 +57,8 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
         //No.
         gameState = IncorrectDodge;
       }
-    } else if(higherButtonPressed) {
+    } else if (higherButtonPressed) {
+      Serial.println("higherButtonPressed");
       //Was the player correct to press the higher button.
       if (myNumber < otherNumber) {
         //No.
@@ -66,10 +68,12 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
         gameState = CorrectAttack;
       }
     }
+    
     // Comunicate the current game state.
     GameResult communicatedGameState = communicateGameStatus(gameState);
     if (communicatedGameState != GameTied) {
-      digitalWrite(analogLED, LOW);
+      Serial.println("Exit loop");
+      noTone(piezo);
       return communicatedGameState;
     }
   }
@@ -81,7 +85,7 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
   
   //Game variables.
   GameResult gameState = GameTied;
-  int Period = (myNumber+1)*200;
+  int period = (myNumber+1)*200;
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {
@@ -119,6 +123,7 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
     if (communicatedGameState != GameTied) {
       noTone(piezo);
       return communicatedGameState;
+    } else {
     }
   }
 }
@@ -169,7 +174,7 @@ GameResult runLEDBrightest(byte myNumber, byte otherNumber) {
   updateLCD(F("LED's brighter!"), 1);
   
   // LED - brightest
-  int brightness = 55 + (myNumber * 40);
+  int brightness = 10 + (myNumber * 10);
   GameResult gameState = GameTied;
   analogWrite(analogLED, brightness);
   
@@ -213,14 +218,14 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
   
   //Game variables.
   GameResult gameState = GameTied;
-  int Period = (myNumber+1)*200;
+  int period = (myNumber+1)*30;
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {
 
     //Work out if the LED should be on or off.
     int timeSinceGameStart = millis() - millisAtGameStart;
-    int x =  timeSinceGameStart/2; //TODO: Name this better.
+    int x =  timeSinceGameStart/period; //TODO: Name this better.
     if (x%2 == 0) {
       digitalWrite(analogLED, HIGH);
     } else {
@@ -228,7 +233,7 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
     }
     if (lowerButtonPressed) {
       //Was the player correct to press the lower button.
-      if (myNumber < otherNumber) {
+      if (myNumber > otherNumber) {
         //Yes.
         gameState = CorrectDodge;
       } else {
@@ -237,7 +242,7 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
       }
     } else if(higherButtonPressed) {
       //Was the player correct to press the higher button.
-      if (myNumber < otherNumber) {
+      if (myNumber > otherNumber) {
         //No.
         gameState = IncorrectAttack;
       } else {
@@ -264,7 +269,7 @@ GameResult runLDRCover() {
   
   // Reaction time, this just lets the LED turn on. If the players
   // are reacting faster than this, they're probably cheating anyway.
-  delay(100);
+  delay(150);
   
   // Obtain the initial value of the sensor pin
   int sensorValue = analogRead(LDRPin);
@@ -272,10 +277,19 @@ GameResult runLDRCover() {
   
   // Keep going until the game is no longer tied.
   while (gameState == GameTied) {
+    Serial.println("Goin' loopy");
     int newValue = analogRead(LDRPin);
+
+    if (lowerButtonPressed || higherButtonPressed){
+      gameState = IncorrectAttack;
+    }
+    
+    Serial.println(sensorValue);
+    Serial.println(newValue);
+    Serial.println();
     
     // Cheek to see if there is a noticable increase (i.e. less light) over the LED.
-    if (newValue >= sensorValue + 300 || newValue == 1023) {
+    if (newValue <= sensorValue / 2) {
       // Change game state to correct attack and record the time of this.
       millisAtButtonPress = millis();
       gameState = CorrectAttack;
