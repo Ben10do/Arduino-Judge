@@ -113,18 +113,19 @@ void fadeStatusLED(byte *fadeValue, bool *isGoingUpwards) {
 
 void loop() {
   // Setting the next game and variables
-  currentGame = decideOnGame(currentGame);
+//  currentGame = decideOnGame(currentGame);
+  currentGame = PiezoPitch;
   communicateRandomNumbers(gameMaxNumbers[currentGame], &myNumber, &otherNumber);
   int countdownDelay = 95 + (getSharedRandomNumber(8) * 15);
 
   // Start the next game, with a count-in.
   playCountdownSFX(countdownDelay);
-  // GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
+  GameResult result = runMicrogame(currentGame, myNumber, otherNumber);
 
   // Clearing up after the game, if it used the piezo.
   noTone(piezo);
   
-  // updateScore(result);
+  updateScore(result);
   setAllLEDs(LOW);
   delay(800);
 }
