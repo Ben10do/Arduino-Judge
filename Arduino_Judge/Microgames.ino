@@ -65,13 +65,12 @@ GameResult runPiezoPitch(byte myNumber, byte otherNumber) {
         //Yes.
         gameState = CorrectAttack;
       }
-    
-      // Comunicate the current game state.
-      GameResult communicatedGameState = communicateGameStatus(gameState);
-      if (communicatedGameState != GameTied) {
-        digitalWrite(analogLED, LOW);
-        return communicatedGameState;
-      }
+    }
+    // Comunicate the current game state.
+    GameResult communicatedGameState = communicateGameStatus(gameState);
+    if (communicatedGameState != GameTied) {
+      digitalWrite(analogLED, LOW);
+      return communicatedGameState;
     }
   }
 }
