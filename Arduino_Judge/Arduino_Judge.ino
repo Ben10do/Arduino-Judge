@@ -141,7 +141,6 @@ void lowerButtonPressedInterrupt() {
     lowerButtonPressed = true;
     higherButtonPressed = false;
     millisAtButtonPress = millis();
-//  disableInterrupts(); // Prevents repeated presses
   }
 }
 
@@ -150,18 +149,12 @@ void higherButtonPressedInterrupt() {
     higherButtonPressed = true;
     lowerButtonPressed = false;
     millisAtButtonPress = millis();
-//  disableInterrupts(); // Prevents repeated presses
   }
 }
 
 void enableInterrupts() {
   attachInterrupt(digitalPinToInterrupt(lowerButton), lowerButtonPressedInterrupt, FALLING);
   attachInterrupt(digitalPinToInterrupt(higherButton), higherButtonPressedInterrupt, FALLING);
-}
-
-void disableInterrupts() {
-//  detachInterrupt(digitalPinToInterrupt(lowerButton));
-//  detachInterrupt(digitalPinToInterrupt(higherButton));
 }
 
 // Additional functions
@@ -346,7 +339,6 @@ void updateLCD(String text, bool isBottomLine) {
 void reset() {
   // Restarts the sketch
   // However, we have to reset all the hardware ourselves
-  disableInterrupts();
   endArduinoSerial();
   Serial.end();
   setAllLEDs(LOW);

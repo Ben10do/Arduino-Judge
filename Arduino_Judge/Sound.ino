@@ -170,8 +170,8 @@ void playIncorrectAttackSFX(bool didAttack) {
     delay(30);
 
 
-    for (int pitch = E_5; pitch >= Ds3; pitch -= 15) {
-      // 34ms
+    for (int pitch = E_5; pitch >= Ds3; pitch -= 5) {
+      // 102ms
       tone(piezo, pitch);
       delay(1);
     }
@@ -184,7 +184,7 @@ void playIncorrectAttackSFX(bool didAttack) {
     delay(60);
     
     tone(piezo, E_3, 120);
-    delay(156);
+    delay(224);
     
   }
   

@@ -85,14 +85,14 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
   
   //Game variables.
   GameResult gameState = GameTied;
-  int period = (myNumber+1)*200;
+  int period = (myNumber+2) * 30;
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {
 
     //Work out if the pizeo should be on or off.
     int timeSinceGameStart = millis() - millisAtGameStart;
-    int x =  timeSinceGameStart/2; //TODO: Name this better.
+    int x =  timeSinceGameStart/period; //TODO: Name this better.
     if (x%2 == 0) {
       tone(piezo, 988); // B_5
     } else {
@@ -100,7 +100,7 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
     }
     if (lowerButtonPressed) {
       //Was the player correct to press the lower button.
-      if (myNumber < otherNumber) {
+      if (myNumber > otherNumber) {
         //Yes.
         gameState = CorrectDodge;
       } else {
@@ -109,7 +109,7 @@ GameResult runPiezoRhythm(byte myNumber, byte otherNumber) {
       }
     } else if(higherButtonPressed) {
       //Was the player correct to press the higher button.
-      if (myNumber < otherNumber) {
+      if (myNumber > otherNumber) {
         //No.
         gameState = IncorrectAttack;
       } else {
@@ -218,14 +218,14 @@ GameResult runLEDFrequency(byte myNumber, byte otherNumber) {
   
   //Game variables.
   GameResult gameState = GameTied;
-  int period = (myNumber+1)*30;
+  int period = (myNumber+2)*30;
   
   //Keep going until the game is no longer tied.
   while (gameState == GameTied) {
 
     //Work out if the LED should be on or off.
-    int timeSinceGameStart = millis() - millisAtGameStart;
-    int x =  timeSinceGameStart/period; //TODO: Name this better.
+    unsigned int timeSinceGameStart = millis() - millisAtGameStart;
+    unsigned int x =  timeSinceGameStart/period; //TODO: Name this better.
     if (x%2 == 0) {
       digitalWrite(analogLED, HIGH);
     } else {

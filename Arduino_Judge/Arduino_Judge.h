@@ -7,6 +7,7 @@
  */
 
 #include <Arduino.h>
+#include "LiquidCrystal595.h"
 
 // All of the microgames!
 typedef enum GameID {
@@ -65,17 +66,21 @@ const int analogLED = 6;
 const int servoPin = 9;
 const int piezo = 10;
 const int whiteLED = 11;
+const int LCDDataPin = 12;
 
 // Analog pin constants
 //   Digital outputs:
 const int serialRX = A0;
 const int serialTX = A1;
+const int LCDLatchPin = A3;
+const int LCDClockPin = A4;
 //   Analog inputs:
 const int LDRPin = A2;
 const int randomPin = A5;
 
-// Object for servo
+// Objects
 Servo servo;
+//LiquidCrystal595 LCD(LCDDataPin, LCDLatchPin, LCDClockPin);
 
 // Stating that this function does not return.
 void reset() __attribute__((noreturn));

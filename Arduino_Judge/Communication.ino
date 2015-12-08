@@ -93,15 +93,10 @@ GameID decideOnGame(GameID previousGame) {
   if (!amPlayerTwo) {
     // Then it's up to us to decide the next game!
     for (;;) {
-      const int noOfGames = 5;
+      const int noOfGames = 6;
       GameID nextGame = (GameID)random(noOfGames);
 
       if (nextGame != previousGame) {
-//        if (nextGame == LEDNumber) {
-//          // Get another number; makes this game less common
-//          nextGame = (GameID)random(noOfGames);
-//        }
-
         arduinoSerial.write(nextGame);
         arduinoSerial.flush();
         return nextGame;
@@ -220,9 +215,9 @@ GameResult communicateGameStatus(GameResult myStatus) {
   // Otherwise, send: CorrectAttack,   IncorrectAttack,
   //                  CorrectDodge, or IncorrectDodge.
 
-  arduinoSerial.flush();
   delay(5);
   arduinoSerial.write(myStatus);
+//  arduinoSerial.flush();
   delay(50);
   waitForResponse();
   int otherStatusIndex = arduinoSerial.read();
@@ -241,13 +236,14 @@ GameResult communicateGameStatus(GameResult myStatus) {
     return myStatus;
 
   } else {
+    Serial.println("This bit");
     // If both players reacted before the Arduinos could
     // communicate, we're going to have to work out who was first.
     unsigned int myResponseTime = millisAtButtonPress - millisAtGameStart;
 
+    delay(5);
     arduinoSerial.write(myResponseTime & 0xFF); // Send least significant byte first
     arduinoSerial.write(myResponseTime >> 8);   // (i.e. little-endian)
-    arduinoSerial.flush();
 
     waitForResponse();
     unsigned int otherResponseTime = arduinoSerial.read();
@@ -262,6 +258,7 @@ GameResult communicateGameStatus(GameResult myStatus) {
       return (GameResult)((int)otherStatus + 2);
 
     } else {
+      Serial.println("Both are the same");
       // If both are the same, we'll let player one decide who wins.
       bool winningPlayerIsPlayerTwo = getSharedRandomNumber(2);
 
