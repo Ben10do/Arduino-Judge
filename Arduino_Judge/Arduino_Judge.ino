@@ -28,9 +28,6 @@ void setup() {
   pinMode(servoPin, OUTPUT);
   
   delay(2000);
-
-  // TODO: Maybe make a sound effect or play a light show
-  // (just while the LCD is displaying its stuff)
   
   // Set up serial, random seed, and servo
   beginArduinoSerial();
@@ -106,7 +103,6 @@ void loop() {
 }
 
 // Button interrupts
-// Feel free to expand if they need expanding
 // Return as quickly as possible, to avoid missing serial inputs
 
 void lowerButtonPressedInterrupt() {

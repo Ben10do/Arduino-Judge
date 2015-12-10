@@ -342,9 +342,6 @@ int generateNoteFreq(int n) {
   // Generates the approx. frequency of a musical note
   // n is the note number, where A4 (440Hz) is n = 49.
   // Formula from: en.wikipedia.org/wiki/Piano_key_frequencies
-
-  // NOTE: Including pow() uses an extra 2,000 bytes!
-  //       Replace if we run out of space.
   return round(pow(2, (n-49.0)/12.0) * 440.0);
 }
 

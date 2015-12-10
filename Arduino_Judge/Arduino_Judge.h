@@ -19,7 +19,7 @@ typedef enum GameID {
 };
 
 // The maximum RNG numbers for each game
-// (last game doesn't matter, so we'll just say a whole byte)
+// (last game doesn't use this number, so we'll use a large number to reduce collisions)
 byte gameMaxNumbers[6] = {12, 10, 14, 5, 10, 100};
 
 // The possible game outcomes
@@ -79,7 +79,6 @@ const int randomPin = A5;
 
 // Objects
 Servo servo;
-//LiquidCrystal595 LCD(LCDDataPin, LCDLatchPin, LCDClockPin);
 
 // Stating that this function does not return.
 void reset() __attribute__((noreturn));
