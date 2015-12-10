@@ -120,7 +120,6 @@ void waitForResponse() {
   }
 
   // If we've reached here, we've timed out.
-  Serial.println("Timeout!");
   handleCommunicationError();
 }
 
@@ -129,13 +128,6 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
   // this function returns.
 
   delay(5);
-
-  Serial.println("communicateRandomNumbers()");
-
-//  while (arduinoSerial.available()) {
-//    // Discard any excess bytes that we don't need
-//    arduinoSerial.read();
-//  }
 
   byte myRandomNum;
   byte otherArduinoRandomNum;
@@ -148,29 +140,14 @@ void communicateRandomNumbers(int max, byte *myNumber, byte *otherNumber) {
 
   do {
     delay(5);
-    Serial.println("Loop");
     myRandomNum = random(max);
     arduinoSerial.write(myRandomNum);
-    Serial.print("me: ");
-    Serial.println(myRandomNum);
-//    arduinoSerial.flush();
-//    Serial.println("flushed");
 
     waitForResponse();
-    Serial.println("got response");
     otherArduinoRandomNum = arduinoSerial.read();
-    Serial.print("them: ");
-    Serial.println(otherArduinoRandomNum);
   } while (myRandomNum == otherArduinoRandomNum);
 
   if (otherArduinoRandomNum >= max) {
-    Serial.println("Hang on, the other Arduino's number is wrong!");
-    Serial.print("max: ");
-    Serial.println(max);
-    Serial.print("My number: ");
-    Serial.println(myRandomNum);
-    Serial.print("Other number: ");
-    Serial.println(otherArduinoRandomNum);
     handleCommunicationError();
   }
 
@@ -217,7 +194,6 @@ GameResult communicateGameStatus(GameResult myStatus) {
 
   delay(5);
   arduinoSerial.write(myStatus);
-//  arduinoSerial.flush();
   delay(50);
   waitForResponse();
   int otherStatusIndex = arduinoSerial.read();
@@ -236,7 +212,6 @@ GameResult communicateGameStatus(GameResult myStatus) {
     return myStatus;
 
   } else {
-    Serial.println("This bit");
     // If both players reacted before the Arduinos could
     // communicate, we're going to have to work out who was first.
     unsigned int myResponseTime = millisAtButtonPress - millisAtGameStart;
@@ -258,7 +233,6 @@ GameResult communicateGameStatus(GameResult myStatus) {
       return (GameResult)((int)otherStatus + 2);
 
     } else {
-      Serial.println("Both are the same");
       // If both are the same, we'll let player one decide who wins.
       bool winningPlayerIsPlayerTwo = getSharedRandomNumber(2);
 
@@ -282,7 +256,6 @@ void handleCommunicationError() {
   // If the Arduino recieves unexpected data, or doesn't
   // recieve any data after a timeout, we'll just reset
   // the sketch, and wait for an initial connection again.
-  Serial.println("Communication Error.\n\n");
   playCommunicationErrorSFX();
   delay(1000);
   reset();

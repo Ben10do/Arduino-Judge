@@ -30,9 +30,7 @@ const int Fs6 = 1480;
 const int Gs6 = 1661;
 const int A_6 = 1760;
 const int B_6 = 1976;
-const int Cs7 = 2217;
 const int D_7 = 2349;
-const int Ds7 = 2489;
 const int E_7 = 2637;
 const int A_8 = 7040;
 
@@ -82,18 +80,8 @@ void playCountdownSFX(int delayTime) {
     }
   }
 
-  updateLCD(F("Starting next"), 0);
   
   for (int i = 0; i < 3; i++) {
-    // TODO: Refactor this?
-    if (i == 0) {
-      updateLCD(F("game in 3..."), 1);
-    } else if (i == 1) {
-      updateLCD(F("game in 2..."), 1);
-    } else if (i == 2) {
-      updateLCD(F("game in 1..."), 1);
-    }
-    
     tone(piezo, pitch, 40);
     delay(delayTime);
     noTone(piezo);
@@ -345,31 +333,10 @@ void playGameOverSFX() {
 
 void playCommunicationErrorSFX() {
   // Indicates that a communication error has occured.
-  updateLCD(F("Comm. Err."), 0);
-  updateLCD(F("Resetting..."), 1);
-  
   tone(piezo, A_2);
   delay(250);
   noTone(piezo);
 }
-
-//void playWhiteNoiseBurst() {
-//  // Generates white noise briefly.
-//  // The call to random() takes about 96µs anyway, so no
-//  // need to add a call to delayMicroseconds() in the loop.
-//
-//  unsigned int beforeMillis = millis();
-//  
-//  for (int i = 0; i < 1000; i++) {
-//    digitalWrite(piezo, random(2));
-//  }
-//
-//  digitalWrite(piezo, LOW);
-//
-//  unsigned int afterMillis = millis();
-//  unsigned int totalMillis = afterMillis - beforeMillis;
-//  Serial.println(totalMillis); // 102
-//}
 
 int generateNoteFreq(int n) {
   // Generates the approx. frequency of a musical note

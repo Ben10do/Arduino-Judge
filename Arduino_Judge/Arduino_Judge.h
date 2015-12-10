@@ -7,7 +7,6 @@
  */
 
 #include <Arduino.h>
-#include "LiquidCrystal595.h"
 
 // All of the microgames!
 typedef enum GameID {
