@@ -39,6 +39,7 @@ typedef enum GameResult {
 bool amPlayerTwo;
 GameID currentGame = (GameID)2; // Won't start with the numbers game
 signed char score = 0;
+const int maxScore = 40;
 
 // The randomly generated numbers used by each Arduino
 byte myNumber = 0;

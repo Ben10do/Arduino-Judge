@@ -13,8 +13,6 @@
 #include <Servo.h>
 #include "Arduino_Judge.h"
 
-const int maxScore = 40;
-
 void setup() {
   // Setup all the pins
   pinMode(lowerButton, INPUT);
