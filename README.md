@@ -38,4 +38,4 @@ If it helps, here's a slightly convoluted schematic:
 
 ![Schematic](Judge Schematic.png)
 
-*Please leave pin **A5** disconnected.*
+*Please leave pin A5 disconnected.*
